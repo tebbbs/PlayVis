@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import { CSVReader } from 'react-papaparse';
-import Graph from './Backend.js';
-import Spotify from './Spotify.js';
+import Cookies from 'js-cookie';
+import Graph, { makeNodesFromCSV } from './Backend.js';
+import { getPlaylistByID, SpotifyLogin, PlaylistSelector } from './Spotify.js';
 import './skeleton.css';
 
 // Import the functions you need from the SDKs you need
@@ -29,27 +30,61 @@ export default class App extends Component {
 
   constructor(props) {
     super(props);
+    this.state = {
+      token: Cookies.get("spotifyAuthToken"),
+      playlistid: null,
+      songs: null
+    };
+    // this looks grim
     this.onFileUpload = this.onFileUpload.bind(this);
+    this.setToken = this.setToken.bind(this);
+    this.setPlaylistID = this.setPlaylistID.bind(this);
+    this.setSongs = this.setSongs.bind(this);
   }
 
   onFileUpload(file) {
-    this.setState({ data: file });
+    this.setSongs(
+      makeNodesFromCSV(file)
+    )
+  }
+
+  setToken(token) {
+    this.setState({ token: token });
+  }
+
+  setSongs(songs) {
+    this.setState({ songs: songs });
+  }
+
+  setPlaylistID(e) {
+    console.log(e.target.value);
+    const id = e.target.value;
+    const songs = getPlaylistByID(id, this.state.token, this.setSongs);
+    this.setState({
+      playlistid: id,
+      songs: songs
+    });
+
   }
 
   render() {
     return (
       <>
         <h1 style={{ textAlign: 'center' }}>playvis</h1>
-        <h6 style={{ textAlign: 'center' }}>Upload a .csv file with playlist data or continue with Spotify</h6>
+        <h6 style={{ textAlign: 'center' }}>Upload a .csv file with playlist data or login with Spotify</h6>
         <div style={{
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'center'
         }}>
-        <Spotify/>
+          <SpotifyLogin token={this.state.token} setToken={this.setToken} />
+          {this.state.token &&
+            <PlaylistSelector token={this.state.token} setPlaylistID={this.setPlaylistID} />
+          }
         </div>
         <CSVReader1 onFileUpload={this.onFileUpload} />
-        {this.state && <Graph data={this.state.data} />}
+        {this.state.songs && <Graph nodes={this.state.songs} />}
       </>
     );
   }
@@ -66,18 +101,6 @@ class CSVReader1 extends Component {
 
   handleOnFileLoad = (data) => {
     this.props.onFileUpload(data);
-  };
-
-  handleOnError = (err, file, inputElem, reason) => {
-    console.log('---------------------------');
-    console.log(err);
-    console.log('---------------------------');
-  };
-
-  handleOnRemoveFile = (data) => {
-    console.log('---------------------------');
-    console.log(data);
-    console.log('---------------------------');
   };
 
   handleRemoveFile = (e) => {

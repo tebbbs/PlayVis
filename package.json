@@ -15,8 +15,10 @@
     "react-force-graph": "^1.41.7",
     "react-papaparse": "^3.17.2",
     "react-scripts": "4.0.3",
+    "react-select": "^5.2.1",
     "react-spotify-api": "^3.0.0",
     "react-spotify-auth": "^1.4.3",
+    "spotify-web-api-js": "^1.5.2",
     "web-vitals": "^1.1.2"
   },
   "resolutions": {
