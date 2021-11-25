@@ -42,7 +42,7 @@ const Graph = (props) => {
   return (
     <ForceGraph2D
       graphData={{ nodes: nodes, links: edges }}
-      nodeLabel={(node) => (`${node.title} - ${node.artist}`)}
+      nodeLabel={(node) => (`${node.title} - ${node.artist} - ${node.genre}`)}
     />
   );
 }

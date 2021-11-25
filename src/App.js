@@ -57,14 +57,9 @@ export default class App extends Component {
   }
 
   setPlaylistID(e) {
-    console.log(e.target.value);
     const id = e.target.value;
-    const songs = getPlaylistByID(id, this.state.token, this.setSongs);
-    this.setState({
-      playlistid: id,
-      songs: songs
-    });
-
+    this.setState({ playlistid: id });
+    getPlaylistByID(id, this.state.token, this.setSongs);
   }
 
   render() {

@@ -4,20 +4,34 @@ import { SpotifyAuth, Scopes } from 'react-spotify-auth';
 import SpotifyWebApi from 'spotify-web-api-js';
 import 'react-spotify-auth/dist/index.css'
 
+async function getArtists(ids, api) {
+  let artists = [];
+  const promises = ids.map((id) => api.getArtist(id));
+  artists = await Promise.all(promises);
+  return artists;
+}
+
 export const getPlaylistByID = (id, token, setSongs) => {
   const spotifyApi = new SpotifyWebApi();
   spotifyApi.setAccessToken(token);
-  // This feels like a hacky way to get around async problem
-  spotifyApi.getPlaylist(id).then(
-    function (data) {
-      setSongs(data.tracks.items.map((item) => {
-        return { title: item.track.name, artist: item.track.artists[0].name };
-      }));
-    },
-    function (err) {
-      console.log(err);
-    }
+
+  var p_tracks = spotifyApi.getPlaylist(id).then(
+    (data) =>  data.tracks.items.map((item) => item.track)
   );
+  var p_artists = p_tracks.then(
+    (tracks) =>  getArtists(tracks.map((track) => track.artists[0].id), spotifyApi)
+  );
+  Promise.all([p_tracks, p_artists]).then(function ([tracks, artists]) {
+    setSongs(
+      tracks.map((track, i) => {
+        return {
+          title: track.name,
+          artist: track.artists[0].name,
+          genre: artists[i].genres[0]
+        }
+      })
+    )
+  })
 }
 
 export const PlaylistSelector = (props) => {
@@ -56,8 +70,8 @@ export const SpotifyLogin = (props) => {
       ) : (
         // Display the login page
         <SpotifyAuth
-          //redirectUri='http://localhost:3000/'
-          redirectUri='https://playvis.web.app/'
+          redirectUri='http://localhost:3000/'
+          //redirectUri='https://playvis.web.app/'
           clientID='c79989282f4f40a2953b4adc36489afc'
           scopes={[Scopes.playlistReadCollaborative, Scopes.playlistReadCollaborative]}
           onAccessToken={
