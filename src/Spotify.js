@@ -40,7 +40,7 @@ export const PlaylistSelector = (props) => {
       <UserPlaylists>
         {({ data }) =>
           data ? (
-            <select onChange={props.setPlaylistID}>
+            <select onChange={props.onChange}>
               {data.items.map((item) => (
                 <option key={item.id} value={item.id}>{item.name}</option>))
               }
