@@ -22,10 +22,9 @@ function getRandomInt(min, max) {
 }
 
 function makeEdges(nodes) {
-  let edgecount = Math.floor(nodes.length * 1.3)
+  let edgecount = Math.floor(nodes.length * 1);
   let edges = new Array(edgecount);
-  let i;
-  for (i = 0; i < edges.length; i++) {
+  for (let i = 0; i < edges.length; i++) {
     edges[i] = {
       // Note: nodes could be linked to themselves with this approach
       source: nodes[getRandomInt(0, nodes.length)],
@@ -43,6 +42,7 @@ const Graph = (props) => {
     <ForceGraph2D
       graphData={{ nodes: nodes, links: edges }}
       nodeLabel={(node) => (`${node.title} - ${node.artist} - ${node.genre}`)}
+      nodeAutoColorBy={(node) => node.genre}
     />
   );
 }

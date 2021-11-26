@@ -24,10 +24,11 @@ export const getPlaylistByID = (id, token, setSongs) => {
   Promise.all([p_tracks, p_artists]).then(function ([tracks, artists]) {
     setSongs(
       tracks.map((track, i) => {
+        const genre = (artists[i].genres.length) === 0 ? "no genre listed" : artists[i].genres[0];
         return {
           title: track.name,
           artist: track.artists[0].name,
-          genre: artists[i].genres[0]
+          genre: genre
         }
       })
     )
@@ -53,12 +54,10 @@ export const PlaylistSelector = (props) => {
 }
 
 export const SpotifyLogin = (props) => {
-  const token = props.token;
-  const setToken = props.setToken;
   return (
     <div>
-      {token ? (
-        <SpotifyApiContext.Provider value={token}>
+      {props.token ? (
+        <SpotifyApiContext.Provider value={props.token}>
           <User>
             {({ data }) =>
               data ? (
@@ -76,8 +75,8 @@ export const SpotifyLogin = (props) => {
           scopes={[Scopes.playlistReadCollaborative, Scopes.playlistReadCollaborative]}
           onAccessToken={
             (token) => {
-              setToken(token);
-              props.setToken(token)
+              props.setToken(token);
+
             }}
         />
       )}

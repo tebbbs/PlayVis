@@ -29,6 +29,13 @@ const buttonRef = React.createRef();
 export default function App() {
   const [token, setToken] = useState(Cookies.get("spotifyAuthToken"));
   const [songs, setSongs] = useState();
+  const onPlaylistSelect = (e) => {
+    const id = e.target.value;
+    getPlaylistByID(id, token, setSongs);
+  };
+  const onFileUpload = (file) => { 
+    setSongs(makeNodesFromCSV(file)) 
+  };
   return (
     <>
       <h1 style={{ textAlign: 'center' }}>playvis</h1>
@@ -41,14 +48,10 @@ export default function App() {
       }}>
         <SpotifyLogin token={token} setToken={setToken} />
         {token &&
-          <PlaylistSelector token={token} onChange={
-            (e) => {
-              const id = e.target.value;
-              getPlaylistByID(id, token, setSongs);
-          }} />
+          <PlaylistSelector token={token} onChange={onPlaylistSelect} />
         }
       </div>
-      <CSVReader1 onFileUpload={(file) => { setSongs(makeNodesFromCSV(file)) }} />
+      <CSVReader1 onFileUpload={onFileUpload} />
       {songs && <Graph nodes={songs} />}
     </>
   );
