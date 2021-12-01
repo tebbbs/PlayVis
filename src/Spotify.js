@@ -13,49 +13,36 @@ const simpleTrackObj = (track, artist) => {
   }
 }
 
-export const getPlaylistByID = (id, token) => {
+export async function getPlaylistByID(id, token) {
   const spotifyApi = new SpotifyWebApi();
   spotifyApi.setAccessToken(token);
 
-  const p_tracks = spotifyApi.getPlaylist(id).then(
-    ({ tracks }) => tracks.items.map((item) => item.track)
-  );
-
-  const p_artists = p_tracks.then(
-    (tracks) => Promise.all(tracks.map((track) => spotifyApi.getArtist(track.artists[0].id)))
-  );
-
-  return Promise.all([p_tracks, p_artists]).then(function ([tracks, artists]) {
-    return tracks.map((track, i) => simpleTrackObj(track, artists[i])
-    )
-  })
+  const tracks = await spotifyApi.getPlaylist(id)
+    .then(({ tracks }) => tracks.items.map((item) => item.track));
+  const artists = await Promise.all(tracks.map((track) => spotifyApi.getArtist(track.artists[0].id)));
+  return tracks.map((track, i) => simpleTrackObj(track, artists[i]));
 }
 
 export const TrackList = ({ songs }) => {
   return (
-    //JSON.stringify(songs)
     <h3>tracks go here</h3>
     //songs.map((item) => <span>{item.track.name}</span>)
 
   )
 }
 
-export const getFeatures = (songs, token) => {
+export async function getFeatures(songs, token) {
   const spotifyApi = new SpotifyWebApi();
-  spotifyApi.setAccessToken(token)
+  spotifyApi.setAccessToken(token);
 
   const limit = 50;
-
   let promises = [];
-
   for (let i = 0; i < songs.length; i += limit)
     promises.push(spotifyApi.getAudioFeaturesForTracks(
-      songs.slice(i, i + limit).map((song) => song.track.id)))
+      songs.slice(i, i + limit).map((song) => song.track.id)));
 
   return Promise.all(promises)
-  .then((featuresList) => 
-      [].concat.apply([], featuresList.map((data) => data.audio_features))
-  )
+    .then((featuresList) => [].concat.apply([], featuresList.map((data) => data.audio_features)));
 }
 
 export const getAllUserTracks = (token) => {
@@ -78,8 +65,6 @@ export const getAllUserTracks = (token) => {
       return Promise.all(promises)
     })
     .then((trackLists) =>
-      //console.log(trackLists)
-      //setSongs([].concat.apply([], trackLists))
       [].concat.apply([], trackLists)
     )
 }

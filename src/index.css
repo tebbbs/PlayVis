@@ -16,17 +16,26 @@ code {
 .step {
   background-color: #EEEEEE;
   margin: 10px;
-  padding: 5px;
   border-radius: 5px;
 }
 
 .stepelem {
   margin: 20px;
+  display: inline-block;
+}
+
+.valInput {
+  border-radius: 5px;
+  border: 0;
+  margin: 10px;
+  text-align: center;
+  width: 100px ;
 }
 
 button {
   background-color: #0274FF; 
   border: none;
+  border-radius: 5px;
   color: white;
   margin: 10px;
   padding: 10px 22px;
