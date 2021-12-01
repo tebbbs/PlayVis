@@ -10,4 +10,28 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+
+}
+
+.step {
+  background-color: #EEEEEE;
+  margin: 10px;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.stepelem {
+  margin: 20px;
+}
+
+button {
+  background-color: #0274FF; 
+  border: none;
+  color: white;
+  margin: 10px;
+  padding: 10px 22px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
 }
