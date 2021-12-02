@@ -52,6 +52,7 @@ export default function App() {
     }));
 
     const genChildren = (parent, step, n) => {
+      console.log(parent)
       let children = [];
       const { bpm, acous, dance } = step.params;
       for (let i = 0; i < fsongs.length && children.length < n; i++) {
@@ -75,7 +76,7 @@ export default function App() {
           && dance.min <= dancedif && dancedif <= dance.max
           // will need a better check to impose min length on cycles
           && cand.track.id !== parent.track.id) {
-          children.push({ step: step.id, song: cand });
+          children.push({ ...cand, stepid: step.id });
         }
       }
       return children;
@@ -92,8 +93,7 @@ export default function App() {
     const childNum = 2;
     const graph = treeGen(
       fsongs[0],
-      ((song, d) => d === 0 ? [] :
-       genChildren(song, oneSteps[maxDepth - d], childNum)),
+      ((song, d) => d === 0 ? [] : genChildren(song, oneSteps[maxDepth - d], childNum)),
       maxDepth
     )
 
