@@ -52,7 +52,6 @@ export default function App() {
     }));
 
     const genChildren = (parent, step, n) => {
-      console.log(parent)
       let children = [];
       const { bpm, acous, dance } = step.params;
       for (let i = 0; i < fsongs.length && children.length < n; i++) {
