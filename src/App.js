@@ -30,9 +30,6 @@ export default function App() {
     steps => steps.filter((item) => item.id !== id));
   const updateStep = (id, newVal) => setSteps(
     steps => steps.map((item) => item.id === id ? { id, state: { ...item.state, ...newVal } } : item));
-  
-
-  console.log("rerendered");
 
   return (
     <>
