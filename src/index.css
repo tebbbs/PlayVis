@@ -13,6 +13,13 @@ code {
 
 }
 
+.maindiv {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
 .step {
   background-color: #EEEEEE;
   margin: 10px;
@@ -43,4 +50,9 @@ button {
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
+}
+
+.songText {
+  color: #30BFFF;
+  font-style: italic;
 }

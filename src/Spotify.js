@@ -56,8 +56,8 @@ export const getAllUserTracks = (token) => {
     .then((data) => data.total)
     .then((total) => {
       let promises = []
-      // i < 1000 because of spotify rate limiting
-      for (let i = 0; i < total && i < 1000; i += limit)
+      // i < 500 because of spotify rate limiting
+      for (let i = 0; i < total && i < 500; i += limit)
         promises.push(
           spotifyApi.getMySavedTracks({ offset: i, limit: limit })
             .then((data) => data.items)
