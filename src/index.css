@@ -20,6 +20,14 @@ code {
   align-items: center;
 }
 
+/* stupid name */
+.innermaindiv {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
 .step {
   background-color: #EEEEEE;
   margin: 10px;

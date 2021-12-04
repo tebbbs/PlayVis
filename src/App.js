@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Cookies from 'js-cookie';
 import { getFeatures, getAllUserTracks, SpotifyLogin } from './Spotify';
-import Tree from 'react-d3-tree';
+import { ForceGraph2D } from 'react-force-graph';
 import { genPL } from './Backend';
 import './index.css';
 
@@ -25,7 +25,7 @@ export default function App() {
   }, [token]);
 
   const addStep = () => setSteps(
-    steps => [...steps, { id: Math.max(0, ...steps.map((item) => item.id)) + 1, state: defaultStepState }]);  
+    steps => [...steps, { id: Math.max(0, ...steps.map((item) => item.id)) + 1, state: defaultStepState }]);
   const delStep = (id) => setSteps(
     steps => steps.filter((item) => item.id !== id));
   const updateStep = (id, newVal) => setSteps(
@@ -48,8 +48,12 @@ export default function App() {
             <button type="button" onClick={() => setGraphData(genPL(songs, features, recipeSteps))}>Generate playlist</button>}
         </div>
         {graphData &&
-          <div id="treeWrapper" style={{ width: '1000px', height: '800px' }}>
-            <Tree data={graphData}  />
+          <div id="treeWrapper" style={{ width: "1000px", height: "800px" }} >
+            <ForceGraph2D
+              graphData={graphData}
+              nodeAutoColorBy={(node) => node.attributes.genre}
+              linkWidth={1.5}
+              linkDirectionalArrowLength={4} />
           </div>
         }
       </div>
@@ -58,20 +62,20 @@ export default function App() {
 }
 
 
-const StepElem = ({ feature, vals, updateVals }) => {
+const StepElem = ({ feature, state, setState }) => {
   return (
     <label className="stepelem">
       <div style={{ textAlign: "center" }}>
-        <input type="checkbox" defaultChecked={vals.checked} onChange={(e) => updateVals(
-          { ...vals, checked: !vals.checked })}  />
+        <input type="checkbox" defaultChecked={state.checked} onChange={(e) => setState(
+          { ...state, checked: !state.checked })} />
         {feature}
       </div>
       <div>
-        <input type="number" className="valInput" value={vals.min} max={vals.max} onChange={(e) => updateVals(
-          ({ ...vals, min: +e.target.value })
+        <input type="number" className="valInput" value={state.min} max={state.max} onChange={(e) => setState(
+          ({ ...state, min: +e.target.value })
         )} />
-        <input type="number" className="valInput" value={vals.max} min={vals.min} onChange={(e) => updateVals(
-          ({ ...vals, max: +e.target.value })
+        <input type="number" className="valInput" value={state.max} min={state.min} onChange={(e) => setState(
+          ({ ...state, max: +e.target.value })
         )} />
       </div>
     </label>
@@ -80,13 +84,14 @@ const StepElem = ({ feature, vals, updateVals }) => {
 
 // App component has access to whole state with this approach but causes re-render with every change in every child
 
-const defaultStepState = { 
-  bpm:   { checked: true, min: -50, max: 50 }, 
-  acous: { checked: true, min: -50, max: 50 }, 
-  dance: { checked: true, min: -50, max: 50 }, 
-  nSongs: 2 };
+const defaultStepState = {
+  bpm: { checked: true, min: -50, max: 50 },
+  acous: { checked: true, min: -50, max: 50 },
+  dance: { checked: true, min: -50, max: 50 },
+  nSongs: 2
+};
 
-const colours = ["#984447", "#ADD9F4", "#476C9B", "#468C98"]
+export const colours = ["#9b5de5", "#f15bb5", "#fee440", "#00bbf9", "#00f5d4"]
 
 const RecipeStep = ({ id, state = defaultStepState, setState, onDel }) => {
 
@@ -95,9 +100,9 @@ const RecipeStep = ({ id, state = defaultStepState, setState, onDel }) => {
   return (
     <div className="step" style={{ backgroundColor: colours[id % colours.length] }}>
       <form>
-        <StepElem feature="BPM" vals={bpm} updateVals={bpm => setState({ bpm })} />
-        <StepElem feature="Acousticness" vals={acous} updateVals={acous => setState({ acous })} />
-        <StepElem feature="Danceability" vals={dance} updateVals={dance => setState({ dance })} />
+        <StepElem feature="BPM" state={bpm} setState={bpm => setState({ bpm })} />
+        <StepElem feature="Acousticness" state={acous} setState={acous => setState({ acous })} />
+        <StepElem feature="Danceability" state={dance} setState={dance => setState({ dance })} />
         <label className="stepelem">
           <div style={{ textAlign: "center" }} >Num. Songs</div>
           <div><input type="number" className="valInput" value={nSongs} min="1" onChange={(e) => setState({ nSongs: +e.target.value })} /></div>
@@ -108,9 +113,3 @@ const RecipeStep = ({ id, state = defaultStepState, setState, onDel }) => {
     </div>
   );
 }
-
-
-
-
-
-
