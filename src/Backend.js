@@ -1,4 +1,5 @@
 // Essentially a module for non-UI code
+
 import { colours } from "./App";
 
 const formatTree = ({ val, children }) => (
@@ -11,11 +12,19 @@ const formatTree = ({ val, children }) => (
       linkColor: colours[val.stepid % colours.length],
       bpm: val.bpm,
       acous: val.acous,
-      dance: val.dance
+      dance: val.dance,
+      strrep: `bpm: ${val.bpm} acous: ${val.acous} dance: ${val.dance}`,
     },
     children: children.map(formatTree)
   }
 )
+
+// const shuffleArray = (array) => {
+//   for (let i = array.length - 1; i > 0; i--) {
+//       const j = Math.floor(Math.random() * (i + 1));
+//       [array[i], array[j]] = [array[j], array[i]];
+//   }
+// }
 
 export const tree2graph = (tnode, links = [], nodes = []) => {
   const { name, id, attributes, children } = tnode;
@@ -27,7 +36,7 @@ export const tree2graph = (tnode, links = [], nodes = []) => {
         source: id,
         target: child.id,
         debugstr: `${tnode.name} -> ${child.name}`,
-        color: attributes.linkColor
+        color: child.attributes.linkColor
       }
     ));
     children.map(child => tree2graph(child, links, nodes));
@@ -43,7 +52,7 @@ export const genPL = (songs, features, recipeSteps) => {
     return Array(nSongs).fill(({ id, params: { bpm, acous, dance } }))
   });
 
-  const fsongs = songs.map((song, i) =>
+  let fsongs = songs.map((song, i) =>
   ({
     track: song.track,
     bpm:   features[i].tempo,
@@ -58,6 +67,14 @@ export const genPL = (songs, features, recipeSteps) => {
   let played = [seed.track.id];
 
   const genChildren = (parent, step, n) => {
+
+    // Prevents the same tracks from being considered too often, but with the
+    // side effect of alternating recentently added/old tracks as fsongs is sorted by
+    // date added 
+    // Shuffling is an alternative but obviously isn't deterministic
+    fsongs.reverse(); 
+
+
     let children = [];
     const { bpm, acous, dance } = step.params;
 
@@ -73,7 +90,9 @@ export const genPL = (songs, features, recipeSteps) => {
         && (!dance.checked || (dance.min <= dancedif && dancedif <= dance.max))
         // will need a better check to impose min length on cycles
         //&& cand.track.id !== parent.track.id) {
-        && !played.slice(-10).includes(cand.track.id)) {
+        && !played.slice(-20).includes(cand.track.id)) {
+        // && !played.includes(cand.track.id)) {
+
         children.push({ ...cand, stepid: step.id });
         played.push(cand.track.id);
       }
@@ -88,11 +107,10 @@ export const genPL = (songs, features, recipeSteps) => {
     });
 
   const maxDepth = oneSteps.length;
-  const childNum = 2;
 
   return tree2graph(formatTree(treeGen(
-    seed,
-    ((song, d) => d === 0 ? [] : genChildren(song, oneSteps[maxDepth - d], childNum)),
+    { ...seed, stepid: recipeSteps.length ? recipeSteps[0].id : 0 },
+    ((song, d) => d ? genChildren(song, oneSteps[maxDepth - d], d / 2) : []),
     maxDepth
   )));
 }

@@ -45,13 +45,15 @@ export default function App() {
         <div>
           <button onClick={addStep}>Add step</button>
           {songs && features &&
-            <button type="button" onClick={() => setGraphData(genPL(songs, features, recipeSteps))}>Generate playlist</button>}
+            <button type="button" onClick={() => 
+              setGraphData(genPL(songs, features, recipeSteps))}>Generate Graph</button>}
         </div>
         {graphData &&
           <div id="treeWrapper" style={{ width: "1000px", height: "800px" }} >
             <ForceGraph2D
               graphData={graphData}
-              nodeAutoColorBy={(node) => node.attributes.genre}
+              nodeLabel={node => `${node.name} - ${node.attributes.artist} - ${node.attributes.strrep}`}
+              nodeAutoColorBy={node => node.attributes.genre}
               linkWidth={1.5}
               linkDirectionalArrowLength={4} />
           </div>
@@ -85,9 +87,9 @@ const StepElem = ({ feature, state, setState }) => {
 // App component has access to whole state with this approach but causes re-render with every change in every child
 
 const defaultStepState = {
-  bpm: { checked: true, min: -50, max: 50 },
-  acous: { checked: true, min: -50, max: 50 },
-  dance: { checked: true, min: -50, max: 50 },
+  bpm: { checked: true, min: -20, max: 20 },
+  acous: { checked: true, min: -20, max: 20 },
+  dance: { checked: true, min: -20, max: 20 },
   nSongs: 2
 };
 
