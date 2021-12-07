@@ -1,0 +1,169 @@
+{
+  "recipes": [
+    {
+      "name": "name1",
+      "steps": [
+        {
+          "id": 1,
+          "state": {
+            "bpm": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "acous": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "dance": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "nSongs": 2
+          }
+        },
+        {
+          "id": 2,
+          "state": {
+            "bpm": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "acous": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "dance": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "nSongs": 2
+          }
+        },
+        {
+          "id": 3,
+          "state": {
+            "bpm": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "acous": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "dance": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "nSongs": 2
+          }
+        }
+      ],
+      "id": 1
+    },
+    {
+      "name": "2",
+      "steps": [
+        {
+          "id": 1,
+          "state": {
+            "bpm": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "acous": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "dance": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "nSongs": 2
+          }
+        },
+        {
+          "id": 3,
+          "state": {
+            "bpm": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "acous": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "dance": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "nSongs": 2
+          }
+        }
+      ],
+      "id": 2
+    },
+    {
+      "name": "2copy",
+      "steps": [
+        {
+          "id": 1,
+          "state": {
+            "bpm": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "acous": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "dance": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "nSongs": 2
+          }
+        },
+        {
+          "id": 3,
+          "state": {
+            "bpm": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "acous": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "dance": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "nSongs": 2
+          }
+        }
+      ],
+      "id": 3
+    }
+  ]
+}

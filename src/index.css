@@ -20,13 +20,6 @@ code {
   align-items: center;
 }
 
-/* stupid name */
-.innermaindiv {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-}
 
 .step {
   background-color: #EEEEEE;
@@ -47,6 +40,17 @@ code {
   width: 50px ;
 }
 
+.recNameInput { 
+  border: 1;
+  border-radius: 5px;
+  margin: 10px;
+  padding: 10px 22px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+}
+
 button {
   background-color: #0274FF; 
   border: none;
@@ -63,4 +67,29 @@ button {
 .songText {
   color: #30BFFF;
   font-style: italic;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+table {
+  border-spacing: 0px;
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 100%;
+  margin-bottom: 15px;
+  background-color: transparent; /* Change the background-color of table here */
+  text-align: left; /* Change the text-alignment of table here */
+}
+
+th {
+  font-weight: bold;
+  border: 1px solid #cccccc; /* Change the border-color of heading here */
+  padding: 8px;
+}
+
+td {
+  border: 1px solid #cccccc; /* Change the border-color of cells here */
+  padding: 8px;
 }

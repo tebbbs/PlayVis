@@ -23,14 +23,6 @@ export async function getPlaylistByID(id, token) {
   return tracks.map((track, i) => simpleTrackObj(track, artists[i]));
 }
 
-export const TrackList = ({ songs }) => {
-  return (
-    <h3>tracks go here</h3>
-    //songs.map((item) => <span>{item.track.name}</span>)
-
-  )
-}
-
 export async function getFeatures(songs, token) {
   const spotifyApi = new SpotifyWebApi();
   spotifyApi.setAccessToken(token);
