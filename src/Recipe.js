@@ -53,33 +53,60 @@ const RecipeStep = ({ id, state = defaultStepState, setState, onDel }) => {
   );
 }
 
-const RecipeSaveButton = ({ steps }) => {
-  const [text, setText] = useState("");
-  const [placeholder, setPlaceholder] = useState("Recipe name")
+const RecipeSaveButton = ({ name, id, steps }) => {
+  const [text, setText] = useState(name ? name : "");
+  const [placeholder, setPlaceholder] = useState(name ? name : "Recipe name");
 
-  const handleSubmit = () => {
-    if (text === "")
-      setPlaceholder("Name required")
-    else {
+  const handleSaveAs = () => {
+    fetch('http://localhost:8000/recipes')
+      .then(res => res.json())
+      .then((recipes) => {
+        if (recipes.map(r => r.name).includes(text)) {
+          setPlaceholder(name + " in use");
+          return;
+        }
+      }
+    )
+    handleSave();
+  }
+
+  const handleSave = () => {
+    if (text === "") {
+      setPlaceholder("Name required");
+      return;
+    }
+    if (!id || text !== name) {
       fetch("http://localhost:8000/recipes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({name: text, steps: steps})
+        body: JSON.stringify({ name: text, steps })
       })
     }
-  };
+    else {
+      fetch(`http://localhost:8000/recipes/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: text, steps })
+      })
+    }
+  }
 
   return (
     <>
       <input type="text" placeholder={placeholder} className="recNameInput" onChange={e => setText(e.target.value)} />
-      <button type="button" onClick={handleSubmit}>Save recipe</button>
+      <button type="button" onClick={handleSave}>Save</button>
+      <button type="button" onClick={handleSaveAs}>Save as</button>
     </>
   )
 
 }
 
 
-export const RecipeStepList = ({ steps, setSteps }) => {
+export const RecipeStepList = ({ recipe, setRecipe }) => {
+
+  const { id, name, steps } = recipe;
+
+  const setSteps = f => setRecipe(({ id, name, steps }) => ({ id, name, steps: f(steps) }));
 
   const addStep = () => setSteps(
     steps => [...steps, { id: Math.max(0, ...steps.map((item) => item.id)) + 1, state: defaultStepState }]);
@@ -92,8 +119,8 @@ export const RecipeStepList = ({ steps, setSteps }) => {
     <>
       {steps.map(({ id, state }) => <RecipeStep key={id} id={id} state={state} setState={val => updateStep(id, val)} onDel={delStep} />)}
       <div>
-      <button onClick={addStep}>Add step</button>
-      <RecipeSaveButton steps={steps} />
+        <button onClick={addStep}>Add step</button>
+        <RecipeSaveButton steps={steps} id={id} name={name} />
       </div>
     </>
   )

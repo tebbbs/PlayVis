@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './index.css'
 
-export const RecipeList = ({ setSteps }) => {
+export const RecipeList = ({ setRecipe }) => {
 
   const [recipes, setRecipes] = useState([]);
 
@@ -16,7 +16,7 @@ export const RecipeList = ({ setSteps }) => {
 
   return (
     <div className="maindiv">
-      {recipes.map((recipe => <RecipeInfo recipe={recipe} key={recipe.id} setSteps={setSteps} />))}
+      {recipes.map((recipe => <RecipeInfo recipe={recipe} key={recipe.id} setRecipe={setRecipe} />))}
     </div>
   )
 }
@@ -62,14 +62,14 @@ const StepsSummary = ({ steps }) => {
   );
 }
 
-const RecipeInfo = ({ recipe, setSteps }) => {
+const RecipeInfo = ({ recipe, setRecipe }) => {
 
   const navigate = useNavigate();
 
-  const { name, steps, id } = recipe
+  const { name, steps, id } = recipe;
 
   const handleOpen = () => {
-    setSteps(steps);
+    setRecipe(recipe);
     navigate("/")
   }
 
@@ -81,7 +81,6 @@ const RecipeInfo = ({ recipe, setSteps }) => {
       })
 
   }
-
 
   return (
     <div style={{ display: "flex", direction: "row ", justifyContent: "space-between" }}>

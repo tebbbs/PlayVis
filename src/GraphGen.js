@@ -48,7 +48,7 @@ const treeGen = (val, f, depth) => (
     children: f(val, depth).map(child => treeGen(child, f, depth - 1))
   });
 
-const genChildren = (parent, fsongs, played, step, n) => {
+const genChildren = (parent, fsongs, played, step, n = 2, maxCycLen = 20) => {
 
   // Prevents the same tracks from being considered too often, but with the
   // side effect of alternating recentently added/old tracks as fsongs is sorted by
@@ -70,7 +70,7 @@ const genChildren = (parent, fsongs, played, step, n) => {
       && (!dance.checked || (dance.min <= dancedif && dancedif <= dance.max))
       // will need a better check to impose min length on cycles
       // && cand.track.id !== parent.track.id) {
-      && !played.slice(-20).includes(cand.track.id)) {
+      && !played.slice(-maxCycLen).includes(cand.track.id)) {
       // && !played.includes(cand.track.id)) {
       // ) {
         children.push({ ...cand, stepid: step.id });
@@ -82,7 +82,24 @@ const genChildren = (parent, fsongs, played, step, n) => {
 
 // TODO: add branching algo as an argument
 
-export const genGraph = (seed, fsongs, recipeSteps) => {
+
+// branch less for each step away from the root node, starting from 5
+const decreaseBranch = maxBranches => maxDepth => height => Math.max(maxBranches - (maxDepth - height), 1) 
+// always make n branches
+const alwaysN = n => _ => _ => n
+
+export const bAlgos = [
+  {
+    desc: "Decrease branch count for each step away from root node, starting from 5",
+    fun: decreaseBranch(5)
+  },
+  {
+    desc: "Always 2",
+    fun: alwaysN(2)
+  }];
+
+
+export const genGraph = (seed, fsongs, recipeSteps, config) => {
 
   // copy fsongs to stop orginal fsongs from being reversed repeatedly
   const songs = fsongs.slice(0);
@@ -94,13 +111,18 @@ export const genGraph = (seed, fsongs, recipeSteps) => {
     return Array(nSongs).fill(({ id, params: { bpm, acous, dance } }))
   });
 
+  const { algoidx, maxCycLen } = config;
+
   // record already chosen track ids
   let played = [seed.track.id];
   const maxDepth = oneSteps.length;
-  const branches = height => Math.max(10 - (maxDepth - height), 1);
+
+  const branches = bAlgos[algoidx].fun(maxDepth);
+  console.log(bAlgos[algoidx].desc);
+
   const tree = treeGen(
     { ...seed, stepid: recipeSteps.length ? recipeSteps[0].id : 0 },
-    ((song, d) => d ? genChildren(song, songs, played, oneSteps[maxDepth - d], branches(d)) : []),
+    ((song, d) => d ? genChildren(song, songs, played, oneSteps[maxDepth - d], branches(d), maxCycLen) : []),
     maxDepth
   );
   const fTree = formatTree(tree);
