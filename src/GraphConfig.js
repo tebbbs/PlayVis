@@ -5,7 +5,7 @@ export const GraphConfig = ({ config, setGraphConfig }) => {
   return (
     <>
       <div style={{ display: "flex", flexDirection: "column" }}>
-        <span>Minimum songs before repeat in a route</span>
+        <span>Minimum songs before repeat in a route [0 = no repeats allowed]</span>
       <input type="number"  value={maxCycLen} min={0}  onChange={(e) => setGraphConfig(
         conf => ({ ...conf, maxCycLen: e.target.value })
       )} />

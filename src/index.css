@@ -17,8 +17,17 @@ code {
   flex: 1;
   display: flex;
   flex-direction: column;
-
   align-items: center; 
+
+}
+
+.stepsdiv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-height: 400px;
+  scroll-behavior: smooth;
+  overflow-y: scroll;
 }
 
 .rightdiv {
@@ -32,8 +41,6 @@ code {
   justify-content: center;
   align-items: flex-start;
 }
-
-
 
 .step {
   background-color: #EEEEEE;

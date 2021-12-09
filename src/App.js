@@ -12,9 +12,21 @@ import './index.css';
 export default function App() {
   const [token, setToken] = useState(Cookies.get("spotifyAuthToken"));
   const [songs, setSongs] = useState();
-  const [recipe, setRecipe] = useState({ steps: [] });
+  const [recipe, setRecipe] = useState();
   const [graphData, setGraphData] = useState();
   const [graphConfig, setGraphConfig] = useState({ algoidx: 0, maxCycLen: 20 });
+
+  useEffect(() => {
+    document.title = "playvis"
+
+    fetch("http://localhost:8000/recipes")
+      .then(res => res.json())
+      .then(recipes => {
+        const id = 1 + Math.max(...recipes.map(rec => rec.id), 0);
+        setRecipe({ id, steps: [] });
+      })
+
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -49,32 +61,34 @@ export default function App() {
                   by <span className="songText">{songs[0].track.artists[0].name}</span>:
                 </span>
               }
-              <RecipeStepList recipe={recipe} setRecipe={setRecipe} />
+              <div className="stepsdiv">
+                {recipe && <RecipeStepList recipe={recipe} setRecipe={setRecipe} />}
+              </div>
               {songs &&
                 <div>
                   <GraphConfig config={graphConfig} setGraphConfig={setGraphConfig} />
                   <button type="button" onClick={() => setGraphData(genGraph(songs[0], songs, recipe.steps, graphConfig))}>Generate graph</button>
                 </div>}
             </div>
-            <div className="rightdiv"> 
-            {!graphData && <div style={{ width: 600, height: 600, border: "dotted 1px grey" }}></div>}
-            {graphData &&
-              <ForceGraph2D
-                graphData={graphData}
-                nodeLabel={node => `${node.name} - ${node.attributes.artist} - ${node.attributes.strrep}`}
-                nodeAutoColorBy={node => node.attributes.genre}
-                linkWidth={1.5}
-                linkDirectionalArrowLength={4}
-                width={600}
-                height={600}
-              />
-            }
+            <div className="rightdiv">
+              {!graphData && <div style={{ width: 600, height: 600, border: "dotted 1px grey" }}></div>}
+              {graphData &&
+                <ForceGraph2D
+                  graphData={graphData}
+                  nodeLabel={node => `${node.name} - ${node.attributes.artist} - ${node.attributes.strrep}`}
+                  nodeAutoColorBy={node => node.attributes.genre}
+                  linkWidth={1.5}
+                  linkDirectionalArrowLength={4}
+                  width={600}
+                  height={600}
+                />
+              }
             </div>
           </div>
         } />
         <Route path="recipes" element={
           <div className="leftdiv">
-          <RecipeList setRecipe={setRecipe} />
+            <RecipeList setRecipe={setRecipe} />
           </div>
         } />
       </Routes>

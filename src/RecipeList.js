@@ -21,7 +21,6 @@ export const RecipeList = ({ setRecipe }) => {
   )
 }
 
-
 const StepsSummary = ({ steps }) => {
   return (
     <>
@@ -63,23 +62,27 @@ const StepsSummary = ({ steps }) => {
 }
 
 const RecipeInfo = ({ recipe, setRecipe }) => {
-
   const navigate = useNavigate();
-
   const { name, steps, id } = recipe;
 
   const handleOpen = () => {
     setRecipe(recipe);
-    navigate("/")
+    navigate("/");
+  }
+
+  const handleAppend = () => {
+    setRecipe(
+      ({ id, name, steps: prevsteps }) => ({ id, name, steps: prevsteps.concat(steps) })
+    );
+    navigate("/");
   }
 
   const handleDelete = () => {
     fetch(`http://localhost:8000/recipes/${id}`, {
         method: "DELETE",
-      }).then(() => {
+      }).then(() => 
         navigate("/")
-      })
-
+      );
   }
 
   return (
@@ -88,6 +91,7 @@ const RecipeInfo = ({ recipe, setRecipe }) => {
       <StepsSummary steps={steps} />
       <div>
         <button type="button" onClick={handleOpen}>Open</button>
+        <button type="button" onClick={handleAppend}>Append</button>
         <button type="button" onClick={handleDelete}>Delete</button>
       </div>
     </div>

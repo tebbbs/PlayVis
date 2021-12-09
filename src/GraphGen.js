@@ -1,4 +1,4 @@
-import { colours } from "./Recipe";
+import { getColour } from "./Recipe";
 
 const formatTree = ({ val, children }) => (
   {
@@ -7,7 +7,7 @@ const formatTree = ({ val, children }) => (
     attributes: {
       artist: val.track.artists[0].name,
       genre: val.track.fullArtist.genres[0],
-      linkColor: colours[val.stepid % colours.length],
+      linkColor: getColour(val.stepid),
       bpm: val.bpm,
       acous: val.acous,
       dance: val.dance,
@@ -16,13 +16,6 @@ const formatTree = ({ val, children }) => (
     children: children.map(formatTree)
   }
 )
-
-// const shuffleArray = (array) => {
-//   for (let i = array.length - 1; i > 0; i--) {
-//       const j = Math.floor(Math.random() * (i + 1));
-//       [array[i], array[j]] = [array[j], array[i]];
-//   }
-// }
 
 const tree2graph = (tnode, links = [], nodes = []) => {
   const { name, id, attributes, children } = tnode;
@@ -118,7 +111,6 @@ export const genGraph = (seed, fsongs, recipeSteps, config) => {
   const maxDepth = oneSteps.length;
 
   const branches = bAlgos[algoidx].fun(maxDepth);
-  console.log(bAlgos[algoidx].desc);
 
   const tree = treeGen(
     { ...seed, stepid: recipeSteps.length ? recipeSteps[0].id : 0 },
