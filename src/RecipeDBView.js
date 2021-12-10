@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './index.css'
+import { getColour } from './Recipe.js';
 
 export const RecipeList = ({ setRecipe }) => {
 
@@ -61,9 +62,11 @@ const StepsSummary = ({ steps }) => {
   );
 }
 
+
+// TODO: rename this
 const RecipeInfo = ({ recipe, setRecipe }) => {
   const navigate = useNavigate();
-  const { name, steps, id } = recipe;
+  const { steps, id } = recipe;
 
   const handleOpen = () => {
     setRecipe(recipe);
@@ -86,10 +89,9 @@ const RecipeInfo = ({ recipe, setRecipe }) => {
   }
 
   return (
-    <div style={{ display: "flex", direction: "row ", justifyContent: "space-between" }}>
-      <h4>{name}</h4>
-      <StepsSummary steps={steps} />
-      <div>
+    <div style={{ display: "flex",  textAlign: "center", alignItems: "flex-end"}}>
+      <RecipeSummary recipe={recipe}/>
+      <div style={{ display: "flex", flexDirection: "column" }}>
         <button type="button" onClick={handleOpen}>Open</button>
         <button type="button" onClick={handleAppend}>Append</button>
         <button type="button" onClick={handleDelete}>Delete</button>
@@ -97,4 +99,14 @@ const RecipeInfo = ({ recipe, setRecipe }) => {
     </div>
   )
 
+}
+
+export const RecipeSummary = ({ recipe }) => {
+  const { id, name, steps } = recipe;
+  return(
+    <div style={{ display: "flex", flexDirection: "column", backgroundColor: getColour({ rid: id, sid: 0 })}}>
+      <h4>{name}</h4>
+      <StepsSummary steps={steps} />
+    </div>
+  )
 }

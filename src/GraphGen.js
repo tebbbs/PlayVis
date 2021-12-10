@@ -89,7 +89,12 @@ export const bAlgos = [
   {
     desc: "Always 2",
     fun: alwaysN(2)
-  }];
+  },
+  {
+    desc: "Always 3",
+    fun: alwaysN(3)
+  }
+];
 
 
 export const genGraph = (seed, fsongs, recipeSteps, config) => {

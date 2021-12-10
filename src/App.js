@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { getFeatures, getAllUserTracks, SpotifyLogin } from './Spotify';
 import { RecipeStepList } from './Recipe';
-import { RecipeList } from './RecipeList';
+import { RecipeList } from './RecipeDBView';
+import { RecipeList as RCRList } from './RecipeCombinerView';
 import { ForceGraph2D } from 'react-force-graph';
 import { genGraph } from './GraphGen';
 import { GraphConfig } from './GraphConfig';
@@ -49,9 +50,17 @@ export default function App() {
     <Router>
       <h1 style={{ textAlign: 'center' }}>playvis</h1>
       <Routes>
+        <Route path="/combine" element={
+          <div className="outerdiv">
+            <RCRList />
+          </div>
+        }/>
         <Route path="/" element={
           <div className="outerdiv">
             <div className="leftdiv">
+            <Link to="/combine">
+                <button type="button">Combine recipes</button>
+              </Link>
               <Link to="/recipes">
                 <button type="button">Load recipe from database</button>
               </Link>

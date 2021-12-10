@@ -22,7 +22,7 @@ const StepElem = ({ feature, state, setState }) => {
 
 const defaultStepState = {
   bpm: { checked: true, min: -20, max: 20 },
-  acous: { checked: true, min: -20, max: 20 },
+  acous: { checked: true, min: -30, max: 30 },
   dance: { checked: true, min: -20, max: 20 },
   nSongs: 2
 };
@@ -126,6 +126,8 @@ export const RecipeStepList = ({ recipe, setRecipe }) => {
 
   const addStep = () => setSteps(
     steps => [...steps, { id: { rid, sid: Math.max(0, ...steps.map((item) => item.id.sid)) + 1 }, state: defaultStepState }]);
+  // Note: checking ids for equality only works because JS object equality checks if two object names
+  // **refer to the same space in memory**
   const delStep = (id) => setSteps(
     steps => steps.filter((item) => item.id !== id));
   const updateStep = (id, newVal) => setSteps(

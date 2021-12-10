@@ -203,6 +203,84 @@
         }
       ],
       "id": 6
+    },
+    {
+      "name": "r3",
+      "steps": [
+        {
+          "id": {
+            "rid": 7,
+            "sid": 1
+          },
+          "state": {
+            "bpm": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "acous": {
+              "checked": true,
+              "min": -30,
+              "max": 30
+            },
+            "dance": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "nSongs": 2
+          }
+        },
+        {
+          "id": {
+            "rid": 7,
+            "sid": 2
+          },
+          "state": {
+            "bpm": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "acous": {
+              "checked": true,
+              "min": -30,
+              "max": 30
+            },
+            "dance": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "nSongs": 2
+          }
+        },
+        {
+          "id": {
+            "rid": 7,
+            "sid": 3
+          },
+          "state": {
+            "bpm": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "acous": {
+              "checked": true,
+              "min": -30,
+              "max": 30
+            },
+            "dance": {
+              "checked": true,
+              "min": -20,
+              "max": 20
+            },
+            "nSongs": 2
+          }
+        }
+      ],
+      "id": 7
     }
   ]
 }
