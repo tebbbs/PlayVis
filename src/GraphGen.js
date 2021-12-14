@@ -1,5 +1,124 @@
 import { getColour } from "./Recipe";
 
+const tree2List = (node) => {
+  if (node.isStep) return node;
+  const unrolled = node.children.flatMap(child =>
+    Array(child.loops).fill(child))
+  return unrolled.flatMap(tree2List)
+}
+
+const expand = (songs, frontier, step) => {
+  let links = [];
+  let nextFront = [];
+  for (let i = 0; i < frontier.length; i++) {
+    const curr = frontier[i];
+    const next = step.isRel ?
+      findRel(songs, curr, step.state) :
+      findAbs(songs, step.state);
+    links.push(...next.map(nxt =>
+    ({
+      source: curr.track.id,
+      target: nxt.track.id
+    })));
+    for (let j = 0; j < next.length; j++) {
+      if (!nextFront.map(n => n.track.id).includes(next[j].track.id))
+        nextFront.push(next[j]);
+    }
+  }
+  const sources = links.map(l => l.source)
+  const targets = links.map(l => l.target)
+  for (let i = 0; i < nextFront.length; i++) {
+    const id = nextFront[i].track.id;
+    if (!sources.includes(id) && !targets.includes(id))
+      console.log("fuckery detected")
+  }
+  return { frontier: nextFront, links };
+
+  // const nextFront = frontier.flatMap(curr => {
+  //   const next = step.isRel ?
+  //     findRel(songs, curr, step.state) :
+  //     findAbs(songs, step.state);
+  //   links.push(...next.map(nxt =>
+  //   ({
+  //     source: curr.track.id,
+  //     target: nxt.track.id
+  //   })))
+  //   return next;
+  // });
+  // return ({ frontier: nextFront, links })
+}
+
+const findRel = (songs, curr, constraints) => {
+  const { bpm, acous, dance, nSongs } = constraints;
+  return songs.filter(song => {
+    const bpmdiff = 100 * (song.bpm - curr.bpm) / curr.bpm;
+    const acousdif = 100 * (song.acous - curr.acous) / curr.acous;
+    const dancedif = 100 * (song.dance - curr.dance) / curr.dance;
+    return ((!bpm.checked || (bpm.min <= bpmdiff && bpmdiff <= bpm.max))
+      && (!acous.checked || (acous.min <= acousdif && acousdif <= acous.max))
+      && (!dance.checked || (dance.min <= dancedif && dancedif <= dance.max)))
+  })
+}
+
+const findAbs = (songs, constraints) => {
+  const { bpm, acous, dance, nSongs } = constraints;
+
+  // TODO: make absolute step interface better
+  
+  //
+
+  return songs.filter(song =>
+    (!bpm.checked || (bpm.min < song.bpm && song.bpm < bpm.max)) &&
+    (!acous.checked || (acous.min < song.acous && song.acous < acous.max)) &&
+    (!dance.checked || (dance.min < song.dance && song.dance < dance.max))
+  )
+}
+
+export const genGraph2 = (root, songs) => {
+
+  const steps = tree2List(root);
+  if (steps[0].isRel) {
+    console.log("Root is relative, cannot continue");
+    return;
+  }
+  console.log(steps)
+
+  let frontier = findAbs(songs, steps[0].state);
+  let links = []
+  for (let i = 1; i < steps.length; i++) {
+    const result = expand(songs, frontier, steps[i]);
+    console.log(result);
+    frontier = result.frontier;
+    links.push(...result.links);
+  }
+
+  console.log(frontier.map(s => s.track.name))
+  console.log(links.map(l => l.source + "->" + l.target));
+
+  return { nodes: frontier.map(formatNode), links }
+
+
+}
+
+const formatNode = (val) => (
+  {
+    name: val.track.name,
+    id: val.track.id,
+    attributes: {
+      artist: val.track.artists[0].name,
+      genre: val.track.fullArtist.genres[0],
+      linkColor: "pink",
+      bpm: val.bpm,
+      acous: val.acous,
+      dance: val.dance,
+      strrep: `bpm: ${val.bpm} acous: ${val.acous} dance: ${val.dance}`,
+    }
+  }
+)
+
+
+
+
 const formatTree = ({ val, children }) => (
   {
     name: val.track.name,
@@ -47,18 +166,18 @@ const genChildren = (parent, fsongs, played, step, n = 2, maxCycLen = 20) => {
   // side effect of alternating recentently added/old tracks as fsongs is sorted by
   // date added 
   // Shuffling is an alternative but obviously isn't deterministic
-  fsongs.reverse(); 
+  fsongs.reverse();
 
   let children = [];
   const { bpm, acous, dance } = step.params;
   for (let i = 0; i < fsongs.length && children.length < n; i++) {
 
     const cand = fsongs[i];
-    const bpmdiff  = 100 * (cand.bpm - parent.bpm) / parent.bpm;
+    const bpmdiff = 100 * (cand.bpm - parent.bpm) / parent.bpm;
     const acousdif = 100 * (cand.acous - parent.acous) / parent.acous;
     const dancedif = 100 * (cand.dance - parent.dance) / parent.dance;
 
-    if ( (!bpm.checked || (bpm.min <= bpmdiff && bpmdiff <= bpm.max))
+    if ((!bpm.checked || (bpm.min <= bpmdiff && bpmdiff <= bpm.max))
       && (!acous.checked || (acous.min <= acousdif && acousdif <= acous.max))
       && (!dance.checked || (dance.min <= dancedif && dancedif <= dance.max))
       // will need a better check to impose min length on cycles
@@ -66,8 +185,8 @@ const genChildren = (parent, fsongs, played, step, n = 2, maxCycLen = 20) => {
       && !played.slice(-maxCycLen).includes(cand.track.id)) {
       // && !played.includes(cand.track.id)) {
       // ) {
-        children.push({ ...cand, stepid: step.id });
-        played.push(cand.track.id);
+      children.push({ ...cand, stepid: step.id });
+      played.push(cand.track.id);
     }
   }
   return children;
@@ -77,7 +196,7 @@ const genChildren = (parent, fsongs, played, step, n = 2, maxCycLen = 20) => {
 
 
 // branch less for each step away from the root node, starting from 5
-const decreaseBranch = maxBranches => maxDepth => height => Math.max(maxBranches - (maxDepth - height), 1) 
+const decreaseBranch = maxBranches => maxDepth => height => Math.max(maxBranches - (maxDepth - height), 1)
 // always make n branches
 const alwaysN = n => _ => _ => n
 

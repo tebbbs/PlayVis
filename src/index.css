@@ -72,6 +72,12 @@ code {
   font-size: 16px;
 }
 
+.arrange-horizontally > * {
+  display: inline-block;
+  text-align: center;
+  padding: 3px;
+}
+
 button {
   background-color: #0274FF; 
   border: none;

@@ -2,30 +2,40 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { getFeatures, getAllUserTracks, SpotifyLogin } from './Spotify';
-import { RecipeStepList } from './Recipe';
+
 import { RecipeList } from './RecipeDBView';
 import { RecipeList as RCRList } from './RecipeCombinerView';
 import { ForceGraph2D } from 'react-force-graph';
-import { genGraph } from './GraphGen';
-import { GraphConfig } from './GraphConfig';
+import { genGraph2 } from './GraphGen';
+
+import { Groups } from './Group';
 import './index.css';
 
 export default function App() {
   const [token, setToken] = useState(Cookies.get("spotifyAuthToken"));
   const [songs, setSongs] = useState();
-  const [recipe, setRecipe] = useState();
+  
+  const defaultTree = {
+    id: "root-00",
+    isStep: false,
+    loops: 1,
+    children: []
+  }
+
+  const [tree, setTree] = useState(defaultTree);
+
   const [graphData, setGraphData] = useState();
-  const [graphConfig, setGraphConfig] = useState({ algoidx: 0, maxCycLen: 20 });
+  // const [graphConfig, setGraphConfig] = useState({ algoidx: 0, maxCycLen: 20 });
 
   useEffect(() => {
     document.title = "playvis"
 
-    fetch("http://localhost:8000/recipes")
-      .then(res => res.json())
-      .then(recipes => {
-        const id = 1 + Math.max(...recipes.map(rec => rec.id), 0);
-        setRecipe({ id, steps: [] });
-      })
+    // fetch("http://localhost:8000/recipes")
+    //   .then(res => res.json())
+    //   .then(recipes => {
+    //     const id = 1 + Math.max(...recipes.map(rec => rec.id), 0);
+    //     setRecipe({ id, steps: [] });
+    //   })
 
   }, []);
 
@@ -50,6 +60,11 @@ export default function App() {
     <Router>
       <h1 style={{ textAlign: 'center' }}>playvis</h1>
       <Routes>
+      <Route path="/groups" element={
+          <div className="outerdiv">
+            <Groups />
+          </div>
+        }/>
         <Route path="/combine" element={
           <div className="outerdiv">
             <RCRList />
@@ -58,25 +73,19 @@ export default function App() {
         <Route path="/" element={
           <div className="outerdiv">
             <div className="leftdiv">
-            <Link to="/combine">
-                <button type="button">Combine recipes</button>
-              </Link>
               <Link to="/recipes">
                 <button type="button">Load recipe from database</button>
               </Link>
               <SpotifyLogin token={token} setToken={setToken} />
-              {songs &&
-                <span>Starting from <span className="songText">{songs[0].track.name} </span>
-                  by <span className="songText">{songs[0].track.artists[0].name}</span>:
-                </span>
-              }
               <div className="stepsdiv">
-                {recipe && <RecipeStepList recipe={recipe} setRecipe={setRecipe} />}
+                {/* {recipe && <RecipeStepList recipe={recipe} setRecipe={setRecipe} />} */}
+                <Groups tree={tree} setTree={setTree} />
               </div>
               {songs &&
                 <div>
-                  <GraphConfig config={graphConfig} setGraphConfig={setGraphConfig} />
-                  <button type="button" onClick={() => setGraphData(genGraph(songs[0], songs, recipe.steps, graphConfig))}>Generate graph</button>
+                  {/* <GraphConfig config={graphConfig} setGraphConfig={setGraphConfig} /> */}
+                  {/* <button type="button" onClick={() => setGraphData(genGraph(songs[0], songs, recipe.steps, graphConfig))}>Generate graph</button> */}
+                  <button type="button" onClick={() => setGraphData(genGraph2(tree, songs))}>Generate graph</button>
                 </div>}
             </div>
             <div className="rightdiv">
@@ -97,7 +106,7 @@ export default function App() {
         } />
         <Route path="recipes" element={
           <div className="leftdiv">
-            <RecipeList setRecipe={setRecipe} />
+            <RecipeList setRecipe={setTree} />
           </div>
         } />
       </Routes>
