@@ -25,7 +25,7 @@ code {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-height: 400px;
+  max-height: 700px;
   scroll-behavior: smooth;
   overflow-y: scroll;
 }
@@ -44,12 +44,13 @@ code {
 
 .step {
   background-color: #EEEEEE;
+  padding: 5px;
   margin: 10px;
   border-radius: 5px;
 }
 
 .stepelem {
-  margin: 20px;
+  margin: 10px;
   display: inline-block;
 }
 
@@ -89,11 +90,6 @@ button {
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
-}
-
-.songText {
-  color: #30BFFF;
-  font-style: italic;
 }
 
 * {

@@ -4,25 +4,6 @@ import { SpotifyAuth, Scopes } from 'react-spotify-auth';
 import SpotifyWebApi from 'spotify-web-api-js';
 import 'react-spotify-auth/dist/index.css'
 
-const simpleTrackObj = (track, artist) => {
-  const genre = (artist.genres.length) === 0 ? "no genre listed" : artist.genres[0];
-  return {
-    title: track.name,
-    artist: track.artists[0].name,
-    genre: genre
-  }
-}
-
-export async function getPlaylistByID(id, token) {
-  const spotifyApi = new SpotifyWebApi();
-  spotifyApi.setAccessToken(token);
-
-  const tracks = await spotifyApi.getPlaylist(id)
-    .then(({ tracks }) => tracks.items.map((item) => item.track));
-  const artists = await Promise.all(tracks.map((track) => spotifyApi.getArtist(track.artists[0].id)));
-  return tracks.map((track, i) => simpleTrackObj(track, artists[i]));
-}
-
 export async function getFeatures(songs, token) {
   const spotifyApi = new SpotifyWebApi();
   spotifyApi.setAccessToken(token);
