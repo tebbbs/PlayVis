@@ -1,5 +1,5 @@
 import React from 'react';
-import { SpotifyApiContext, UserPlaylists, User } from 'react-spotify-api';
+import { SpotifyApiContext, User } from 'react-spotify-api';
 import { SpotifyAuth, Scopes } from 'react-spotify-auth';
 import SpotifyWebApi from 'spotify-web-api-js';
 import 'react-spotify-auth/dist/index.css'
@@ -43,24 +43,6 @@ export async function getAllUserTracks(token)  {
     track: { ...t.track, fullArtist: artists[i] },
   }));
 
-}
-
-export const PlaylistSelector = ({ token, onChange }) => {
-  return (
-    <SpotifyApiContext.Provider value={token}>
-      <UserPlaylists>
-        {({ data }) =>
-          data ? (
-            <select onChange={onChange}>
-              {data.items.map((item) => (
-                <option key={item.id} value={item.id}>{item.name}</option>))
-              }
-            </select>
-          ) : null
-        }
-      </UserPlaylists>
-    </SpotifyApiContext.Provider>
-  )
 }
 
 export const SpotifyLogin = ({ token, setToken }) => {

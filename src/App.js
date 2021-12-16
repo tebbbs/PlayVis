@@ -3,8 +3,7 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { getFeatures, getAllUserTracks, SpotifyLogin } from './Spotify';
 import { ForceGraph2D } from 'react-force-graph';
-import { genGraph2 } from './GraphGen';
-
+import { genGraph2, spreadLinks } from './GraphGen';
 import { Groups, defaultTree } from './Group';
 import './index.css';
 
@@ -42,19 +41,15 @@ export default function App() {
       <Routes>
         <Route path="/" element={
           <div className="outerdiv">
-            <div className="leftdiv">
               <SpotifyLogin token={token} setToken={setToken} />
               <div className="stepsdiv">
                 <Groups tree={tree} setTree={setTree} />
               </div>
               {songs &&
                 <div>
-                  <button type="button" onClick={() => setGraphData(genGraph2(tree, songs))}>Generate graph</button>
+                  <button type="button" onClick={() => setGraphData(spreadLinks(genGraph2(tree, songs)))}>Generate graph</button>
                 </div>}
-            </div>
-            <div className="rightdiv">
               {graphData && <Graph data={graphData} />}
-            </div>
           </div>
         } />
       </Routes>
@@ -67,12 +62,12 @@ const Graph = ({ data }) => {
   const fgRef = useRef();
   return <ForceGraph2D
     graphData={data}
-    nodeLabel={node => `${node.name} - ${node.attributes.artist}`}
+    nodeLabel={node => node.isMid ? "" : `${node.name} - ${node.attributes.artist}`}
     nodeAutoColorBy={node => node.attributes.genre}
     linkWidth={1.5}
     linkDirectionalArrowLength={4}
-    width={600}
-    height={600}
+    width={1000}
+    height={800}
     ref={fgRef}
     cooldownTicks={100}
     onEngineStop={() => fgRef.current.zoomToFit(400)}

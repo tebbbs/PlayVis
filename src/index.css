@@ -13,14 +13,6 @@ code {
 
 }
 
-.leftdiv {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center; 
-
-}
-
 .stepsdiv {
   display: flex;
   flex-direction: column;
@@ -30,16 +22,14 @@ code {
   overflow-y: scroll;
 }
 
-.rightdiv {
-  flex: 1;
-}
+
 
 .outerdiv {
   padding: 0% 5%;
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: flex-start;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .step {
@@ -50,8 +40,10 @@ code {
 }
 
 .stepelem {
-  margin: 10px;
+  margin: 20px;
   display: inline-block;
+  flex: 1;
+  width: 200px
 }
 
 .valInput {
@@ -90,29 +82,4 @@ button {
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-table {
-  border-spacing: 0px;
-  border-collapse: collapse;
-  width: 100%;
-  max-width: 100%;
-  margin-bottom: 15px;
-  background-color: transparent; /* Change the background-color of table here */
-  text-align: left; /* Change the text-alignment of table here */
-}
-
-th {
-  font-weight: bold;
-  border: 1px solid #cccccc; /* Change the border-color of heading here */
-  padding: 8px;
-}
-
-td {
-  border: 1px solid #cccccc; /* Change the border-color of cells here */
-  padding: 8px;
 }
