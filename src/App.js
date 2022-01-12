@@ -7,15 +7,14 @@ import { genGraph2, spreadLinks } from './GraphGen';
 import { Groups, defaultTree } from './Group';
 import './index.css';
 
+document.title = "playvis"
+
 export default function App() {
   const [token, setToken] = useState(Cookies.get("spotifyAuthToken"));
   const [songs, setSongs] = useState();
   const [tree, setTree] = useState(defaultTree);
   const [graphData, setGraphData] = useState();
 
-  useEffect(() => {
-    document.title = "playvis"
-  }, []);
 
   useEffect(() => {
     async function fetchData() {

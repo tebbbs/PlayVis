@@ -15,10 +15,11 @@ export async function getFeatures(songs, token) {
       songs.slice(i, i + limit).map((song) => song.track.id)));
 
   return Promise.all(promises)
-    .then((featuresList) => [].concat.apply([], featuresList.map((data) => data.audio_features)));
+    .then((featuresList => featuresList.flatMap(data => data.audio_features)));
+
 }
 
-export async function getAllUserTracks(token)  {
+export async function getAllUserTracks(token) {
   const spotifyApi = new SpotifyWebApi();
   spotifyApi.setAccessToken(token);
 
@@ -31,14 +32,14 @@ export async function getAllUserTracks(token)  {
   // i < 200 because of spotify rate limiting
   for (let i = 0; i < total && i < 200; i += limit)
     promises.push(
-      spotifyApi.getMySavedTracks({ offset: i, limit: limit })
-        .then((data) => data.items)
+      spotifyApi.getMySavedTracks({ offset: i, limit })
+        .then(data => data.items)
     )
   const tracksLists = await Promise.all(promises);
   const tracks = tracksLists.flat();
   const artists = await Promise.all(
     tracks.map(({ track }) => spotifyApi.getArtist(track.artists[0].id)));
-  return tracks.map((t, i) => ({ 
+  return tracks.map((t, i) => ({
     added_at: t.added_at,
     track: { ...t.track, fullArtist: artists[i] },
   }));

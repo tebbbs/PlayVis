@@ -9,7 +9,8 @@ export const Groups = ({ tree, setTree }) => {
 
   const tUpdate = (node, newnode) => {
     if (node.id === newnode.id) return newnode;
-    return node.isStep || !node.children.length ? node
+    return node.isStep || !node.children.length ? 
+        node
       : { ...node, children: node.children.map(child => tUpdate(child, newnode)) };
   }
 
