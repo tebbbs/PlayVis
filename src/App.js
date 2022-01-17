@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { getFeatures, getAllUserTracks, SpotifyLogin } from './Spotify';
-import { ForceGraph2D } from 'react-force-graph';
-import { genGraph2, spreadLinks } from './GraphGen';
+import { genDAG2 } from './GraphGen';
 import { Groups, defaultTree } from './Group';
+import DAG from './DAG'
 import './index.css';
 
 document.title = "playvis"
@@ -13,8 +13,7 @@ export default function App() {
   const [token, setToken] = useState(Cookies.get("spotifyAuthToken"));
   const [songs, setSongs] = useState();
   const [tree, setTree] = useState(defaultTree);
-  const [graphData, setGraphData] = useState();
-
+  const [dagData, setDagData] = useState();
 
   useEffect(() => {
     async function fetchData() {
@@ -46,9 +45,9 @@ export default function App() {
               </div>
               {songs &&
                 <div>
-                  <button type="button" onClick={() => setGraphData(spreadLinks(genGraph2(tree, songs)))}>Generate graph</button>
+                  <button type="button" onClick={() => setDagData((genDAG2(tree, songs)))}>Generate DAG</button>
                 </div>}
-              {graphData && <Graph data={graphData} />}
+              {dagData && <DAG data={dagData}/>}
           </div>
         } />
       </Routes>
@@ -57,26 +56,6 @@ export default function App() {
   );
 }
 
-const Graph = ({ data }) => {
-  const fgRef = useRef();
-  return <ForceGraph2D
-    graphData={data}
-    nodeLabel={node => node.isMid ? "" : `${node.name} - ${node.attributes.artist}`}
-    nodeAutoColorBy={node => node.attributes.genre}
-    linkWidth={1.5}
-    linkDirectionalArrowLength={4}
-    width={1000}
-    height={800}
-    ref={fgRef}
-    cooldownTicks={100}
-    onEngineStop={() => fgRef.current.zoomToFit(400)}
-    nodeCanvasObject={({ img, x, y }, ctx) => {
-      const size = 12;
-      ctx.drawImage(img, x - size / 2, y - size / 2, size, size);
-    }}
-    
-  />;
-};
 
 
 

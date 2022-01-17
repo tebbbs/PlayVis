@@ -3,7 +3,11 @@ import { defaultRelStep, defaultAbsStep, defaultGroup } from "./GroupDefaults"
 import _uniqueId from 'lodash/uniqueId'
 import { Slider } from "@mui/material"
 
-export const defaultTree = { ...defaultGroup(_uniqueId()), children: [defaultAbsStep(_uniqueId())] };
+export const defaultTree = { ...defaultGroup(_uniqueId()), 
+  children: [
+    defaultAbsStep(_uniqueId()),
+    defaultRelStep(_uniqueId()),
+    defaultRelStep(_uniqueId())] };
 
 export const Groups = ({ tree, setTree }) => {
 
@@ -126,7 +130,6 @@ const StepElem = ({ feature, range, state, setState }) => {
           onChange={e => {
             const [min, max] = e.target.value;
             setState({ ...state, min: min, max: max })
-
           }}
           valueLabelDisplay="auto"
           min={rmin}

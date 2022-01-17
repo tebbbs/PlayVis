@@ -1,30 +1,63 @@
 // probably need to change this to something more automata 
 // like to handle 'max'/'inf' loop options
-const tree2List = (node) => {
-  if (node.isStep) return node;
-  const unrolled = node.children.flatMap(child =>
-    Array(child.loops).fill(child));
-  return unrolled.flatMap(tree2List);
-}
+// side note: would be good to follow 'max' by an absolute step to 'reset' things
+const tree2List = (node) => { 
+  if (node.isStep) 
+     return Array(node.loops).fill(node)
 
-const expand = (songs, frontier, step) => {
+  // unroll this step
+   const unrolled = Array(node.loops).fill(node.children).flat()
+ 
+   // unroll children
+   return unrolled.flatMap(tree2List);
+   
+ }
+
+
+const DAGexpandRel = (songs, frontier, step, stepNum) => {
   let links = [];
   const nextFront = frontier.flatMap(curr => {
-    const next = (step.isRel ?
-      findRel(songs, curr, step.state) :
-      findAbs(songs, step.state))
-      .filter(song => song.id !== curr.id);
+    const next = findRel(songs, curr, step.state).filter(song => song.id !== curr.id);
     links.push(...next.map(nxt =>
     ({
-      source: curr.id,
-      target: nxt.id,
+      source: curr.id + (stepNum - 1),
+      target: nxt.id + stepNum,
       stepid: step.id,
-      color: step.colour
+      colour: step.colour
     })));
     return next;
   });
   const nFront = Array.from(new Set(nextFront));
-  return { frontier: nFront, links };
+  return { frontier: nFront.map(node => ({ ...node, stepNum: stepNum })), links };
+
+}
+
+const DAGexpandAbs = (songs, frontier, step, stepNum) => {
+  const union = {
+    id: "union-" + stepNum,
+    isUnion: true,
+  };
+
+  const nextFront = findAbs(songs, step.state);
+  const l1s = frontier.map(curr => ({
+    source: curr.id + (stepNum - 1),
+    target: union.id,
+    stepid: step.id,
+    colour: step.colour
+  }));
+  const l2s = nextFront.map(nxt => ({
+    source: union.id,
+    target: nxt.id + stepNum,
+    stepid: step.id,
+    colour: step.colour
+  })
+  );
+  const links = [...l1s, ...l2s]
+
+  const nFront = Array.from(new Set(nextFront));
+
+  return { frontier: nFront.map(node => ({ ...node, stepNum: stepNum })), links, union };
+
 
 }
 
@@ -52,117 +85,61 @@ const findAbs = (songs, constraints) => {
   )
 }
 
-export const genGraph2 = (root, songs) => {
-  const steps = tree2List(root);
-  if (steps[0].isRel) {
-    console.log("Root is relative, cannot continue");
-    return;
-  }
+export const genDAG2 = (stepTree, songs) => {
+  const steps = tree2List(stepTree);
 
   let frontier = findAbs(songs, steps[0].state);
+  frontier.forEach((song, i) => frontier[i] = { ...song, stepNum: 0 });
+
   let links = []
-  let nodes = new Set(frontier);
+  let nodes = [frontier]
+  let unions = []
+
   for (let i = 1; i < steps.length; i++) {
-    const result = expand(songs, frontier, steps[i]);
+    const result = steps[i].isRel ?
+      DAGexpandRel(songs, frontier, steps[i], i)
+      : DAGexpandAbs(songs, frontier, steps[i], i);
+
+    if (!steps[i].isRel) unions.push(result.union)
+
     frontier = result.frontier;
     links = [...links, ...result.links];
-    // Remove nodes that didn't have neighbours/weren't added to the
-    // frontier after 2nd step
-    if (i === 1) {
+
+    for (let j = i - 1; j >= 0; j--) {
+      // find nodes to remove, i.e. nodes with no links coming from them
       const srcs = links.map(l => l.source);
-      const tgts = links.map(l => l.target);
-      const conNodes = [...nodes, ...result.frontier].filter(node =>
-        srcs.includes(node.id) || tgts.includes(node.id));
-      nodes = new Set(conNodes);
+      const rem_col = nodes[j].filter(node => !srcs.includes(node.id + j));
+      const rem_ids = rem_col.map(node => node.id + j);
+      // remove links to nodes that are to be removed
+      links = links.filter(l => !rem_ids.includes(l.target));
+      // remove nodes
+      nodes[j] = nodes[j].filter(n => !rem_ids.includes(n.id + n.stepNum));
     }
-    else
-      nodes = new Set([...nodes, ...result.frontier])
 
+    nodes.push(result.frontier);
   }
 
-  const lnodes = Array.from(nodes);
-  const llinks = Array.from(links)
+  nodes = nodes.flat().map(formatDAGNode);
+  nodes.push(...unions);
 
-  return { nodes: lnodes.map(formatNode), links: llinks }
-
+  return { nodes, linkprops: links }
 }
 
-const createMidNode = (l) => ({
-  name: "",
-  id: l.source + l.stepid + l.target,
-  img: new Image(),
-  color: l.colour,
-  attributes: {
-    artist: "",
-    genre: "",
-    bpm: -1,
-    acous: -1,
-    dance: -1,
-    strrep: "",
-  },
-  isMid: true
-})
-
-const splitLink = (l) => {
-  const mid = createMidNode(l);
-  const la = {
-    ...l,
-    source: l.source,
-    target: mid.id,
-  }
-  const lb = {
-    ...l,
-    source: mid.id,
-    target: l.target,
-  }
-  return { la, mid, lb }
-}
-
-export const spreadLinks = ({ nodes, links }) => {
-  let nodesToAdd = [];
-  let linksToAdd = [];
-  let linkIdxsToRemove = [];
-
-  for (let i = 0; i < links.length; i++) {
-    const l1 = links[i];
-    for (let j = i + 1; j < links.length; j++) {
-      const l2 = links[j];
-      if ((l1.source === l2.source && l1.target === l2.target)
-        || (l1.source === l2.target && l1.target === l2.source)) {
-        const { la: l1a, mid: mid1, lb: l1b } = splitLink(l1);
-        const { la: l2a, mid: mid2, lb: l2b } = splitLink(l2);
-        nodesToAdd.push(mid1, mid2);
-        linksToAdd.push(l1a, l1b, l2a, l2b);
-        linkIdxsToRemove.push(i, j);
-      }
-    }
-  }
-  const rnodes = nodes.concat(nodesToAdd);
-  const rlinks = links.filter((_, i) => !linkIdxsToRemove.includes(i))
-    .concat(linksToAdd)
-
-  return { nodes: rnodes, links: rlinks }
-
-}
-
-const formatNode = (val) => {
-  const imgObj = val.track.album.images[1];
-  const img = new Image(imgObj.width, imgObj.height);
-  img.src = imgObj.url;
+const formatDAGNode = (node) => {
   return {
-    name: val.track.name,
-    id: val.id,
-    img: img,
+    name: node.track.name,
+    id: node.id + node.stepNum,
+    trackid: node.track.id,
+    imgurl: node.track.album.images[1].url,
+    isUnion: false,
     attributes: {
-      artist: val.track.artists[0].name,
-      genre: val.track.fullArtist.genres[0],
-      bpm: val.bpm,
-      acous: val.acous,
-      dance: val.dance,
-      strrep: `bpm: ${val.bpm} acous: ${val.acous} dance: ${val.dance}`,
-    },
-    isMid: false
-
+      artist: node.track.artists[0].name,
+      genre: node.track.fullArtist.genres[0],
+      bpm: node.bpm,
+      acous: node.acous,
+      dance: node.dance,
+      strrep: `bpm: ${node.bpm} acous: ${node.acous} dance: ${node.dance}`,
+    }
   }
 }
 
