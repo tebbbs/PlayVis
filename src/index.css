@@ -22,28 +22,19 @@ code {
   overflow-y: scroll;
 }
 
-
-
-.outerdiv {
-  padding: 0% 5%;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-}
-
 .step {
+  font-size: small;
   background-color: #EEEEEE;
-  padding: 5px;
-  margin: 10px;
+  padding: 0px;
+  margin: 5px;
   border-radius: 5px;
 }
 
 .stepelem {
-  margin: 20px;
+  margin: 0px 10px;
   display: inline-block;
   flex: 1;
-  width: 200px
+  width: 100px
 }
 
 .valInput {
@@ -51,10 +42,10 @@ code {
   border: 0;
   margin: 10px;
   text-align: center;
-  width: 50px ;
+  width: 30px ;
 }
 
-.recNameInput { 
+/* .recNameInput { 
   border: 1;
   border-radius: 5px;
   margin: 10px;
@@ -63,7 +54,7 @@ code {
   text-decoration: none;
   display: inline-block;
   font-size: 16px;
-}
+} */
 
 .arrange-horizontally > * {
   display: inline-block;
@@ -76,18 +67,14 @@ button {
   border: none;
   border-radius: 5px;
   color: white;
-  margin: 10px;
-  padding: 10px 22px;
+  margin: 5px;
+  padding: 5px 10px;
   text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
+  font-size: small;
 }
 
-.node circle {
-  fill: rgb(146, 35, 35);
-  stroke: steelblue;
-  stroke-width: 3px;
+.dagdiv {
+  overflow: scroll;
 }
 
 .node text {
@@ -98,4 +85,19 @@ button {
   fill: none;
   stroke: #ccc;
   stroke-width: 2px;
+}
+
+.gridcontainer { 
+  display: grid;
+  grid-column-gap: 20px;
+  grid-template-columns: 3fr 6fr 3fr;
+}
+
+.recipediv {
+  height: 80vh;
+  overflow: scroll;
+}
+
+.playlistdiv {
+  background-color: #EEEEEE;
 }

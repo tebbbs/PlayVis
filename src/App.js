@@ -4,8 +4,9 @@ import Cookies from 'js-cookie';
 import { getFeatures, getAllUserTracks, SpotifyLogin } from './Spotify';
 import { genDAG2 } from './GraphGen';
 import { Groups, defaultTree } from './Group';
-import DAG from './DAG'
+import { DAG2 } from './DAG'
 import './index.css';
+import Playlist from './Playlist'
 
 document.title = "playvis"
 
@@ -14,6 +15,7 @@ export default function App() {
   const [songs, setSongs] = useState();
   const [tree, setTree] = useState(defaultTree);
   const [dagData, setDagData] = useState();
+  const [playlist, setPlaylist] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -33,21 +35,51 @@ export default function App() {
 
   }, [token]);
 
+  // return (
+  //   <Router>
+  //     <h1 style={{ textAlign: 'center' }}>playvis</h1>
+  //     <Routes>
+  //       <Route path="/" element={
+  //         <div className="outerdiv">
+  //           <SpotifyLogin token={token} setToken={setToken} />
+  //           <div className="stepsdiv">
+  //             <Groups tree={tree} setTree={setTree} />
+  //           </div>
+  //           <button type="button" onClick={() => setDagData((genDAG2(tree, songs)))}>Generate DAG</button>
+  //           <div className="dagContainer">
+  //             {dagData && <DAG2 data={dagData} setPlaylist={setPlaylist} />}
+  //           </div>
+  //           <Playlist tracks={playlist} />
+  //         </div>
+  //       } />
+  //     </Routes>
+  //   </Router>
+
+  // );
+
   return (
     <Router>
       <h1 style={{ textAlign: 'center' }}>playvis</h1>
+      <SpotifyLogin token={token} setToken={setToken} />
       <Routes>
         <Route path="/" element={
-          <div className="outerdiv">
-              <SpotifyLogin token={token} setToken={setToken} />
-              <div className="stepsdiv">
-                <Groups tree={tree} setTree={setTree} />
-              </div>
-              {songs &&
-                <div>
-                  <button type="button" onClick={() => setDagData((genDAG2(tree, songs)))}>Generate DAG</button>
-                </div>}
-              {dagData && <DAG data={dagData}/>}
+          <div className="gridcontainer">
+            
+            <div className="recipediv">
+            <button type="button" onClick={() => {
+                setDagData((genDAG2(tree, songs)));
+                setPlaylist([]);
+            }}>Generate DAG</button>
+              <Groups tree={tree} setTree={setTree} />
+            </div>
+            
+            <div className="dagdiv">
+              {dagData && <DAG2 data={dagData} setPlaylist={setPlaylist} />}
+            </div>
+            
+            <div className="playlistdiv">
+              <Playlist tracks={playlist} />
+            </div>
           </div>
         } />
       </Routes>

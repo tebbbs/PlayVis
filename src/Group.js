@@ -3,18 +3,20 @@ import { defaultRelStep, defaultAbsStep, defaultGroup } from "./GroupDefaults"
 import _uniqueId from 'lodash/uniqueId'
 import { Slider } from "@mui/material"
 
-export const defaultTree = { ...defaultGroup(_uniqueId()), 
+export const defaultTree = {
+  ...defaultGroup(_uniqueId()),
   children: [
     defaultAbsStep(_uniqueId()),
     defaultRelStep(_uniqueId()),
-    defaultRelStep(_uniqueId())] };
+    defaultRelStep(_uniqueId())]
+};
 
 export const Groups = ({ tree, setTree }) => {
 
   const tUpdate = (node, newnode) => {
     if (node.id === newnode.id) return newnode;
-    return node.isStep || !node.children.length ? 
-        node
+    return node.isStep || !node.children.length ?
+      node
       : { ...node, children: node.children.map(child => tUpdate(child, newnode)) };
   }
 
@@ -46,18 +48,24 @@ const Group = ({ node, setNode, onDel }) => {
 
   return (
     <div style={{ backgroundColor: colour }}>
-      <button type="button" style={{ padding: "5px 10px", verticalAlign: "top", backgroundColor: "red" }} onClick={onDel}>X</button>
-      <label className="stepelem">
-        <div style={{ textAlign: "center" }}>Loops</div>
-        <div><input type="number" className="valInput" value={loops} min="1" onChange={(e) => setNode({ ...node, loops: +e.target.value })} /></div>
-      </label>
+      <div style={{display: "flex", justifyContent: "space-between", align: "center" }}>
+        <div>
+          Loops:
+          <input type="number" className="valInput" value={loops} min="1" onChange={(e) => setNode({ ...node, loops: +e.target.value })} />
+        </div>
+        <div>
       <button type="button" onClick={() => setCollapsed(curr => !curr)} >{collapsed ? "Expand" : "Collapse"}</button>
+      <DelButton onDel={onDel} />
+      </div>
+      </div>
+      <div style={{ padding: "0px 5px" }}>
       {!collapsed &&
         <>
           {children.map(child =>
             <Node node={child} setNode={setNode} key={child.id} onDel={() => delChild(child.id)} />)}
           <AddChild addChild={addChild} />
         </>}
+      </div>
     </div>
   )
 }
@@ -97,21 +105,34 @@ const Step = ({ node, setNode, onDel }) => {
 
   return (
     <div className="step" style={{ backgroundColor: node.colour }}>
-      {node.isRel ? "Relative change values: " : "Absolute values: "}
+      <div style={{display: "flex", justifyContent: "space-between", align: "center" }}>
+      ({node.isRel ? "rel" : "abs"} values)
+        <div>
+          Loops:
+          <input type="number" className="valInput" value={node.loops} min="1" onChange={(e) => setNode({ ...node, loops: +e.target.value })} />
+        </div>
+      <DelButton onDel={onDel} />
+      </div>
       <div>
-        <StepElem feature="BPM         " range={ranges.bpm} state={bpm} setState={bpm => updateState({ bpm })} />
-        <StepElem feature="Acousticness" range={ranges.acous} state={acous} setState={acous => updateState({ acous })} />
-        <StepElem feature="Danceability" range={ranges.dance} state={dance} setState={dance => updateState({ dance })} />
-        <label className="stepelem">
-          <div style={{ textAlign: "center" }}>Loops</div>
-          <div><input type="number" className="valInput" value={node.loops} min="1" onChange={(e) => setNode({ ...node, loops: +e.target.value })} /></div>
-        </label>
-        <button type="button" style={{ padding: "5px 10px", verticalAlign: "top", backgroundColor: "red" }}
-          onClick={onDel}>X</button>
+        <StepElem feature="BPM   " range={ranges.bpm} state={bpm} setState={bpm => updateState({ bpm })} />
+        <StepElem feature="Acous." range={ranges.acous} state={acous} setState={acous => updateState({ acous })} />
+        <StepElem feature="Dance." range={ranges.dance} state={dance} setState={dance => updateState({ dance })} />
       </div>
     </div>
   )
 }
+
+const DelButton = ({ onDel }) => {
+  return (
+    <button type="button" style={
+      { 
+        backgroundColor: "red",
+      }}
+      onClick={onDel}>x</button>
+  )
+}
+
+
 
 const StepElem = ({ feature, range, state, setState }) => {
   const [rmin, rmax] = range
@@ -119,7 +140,7 @@ const StepElem = ({ feature, range, state, setState }) => {
   return (
     <div className="stepelem">
       <div style={{ textAlign: "center" }}>
-        <input type="checkbox" defaultChecked={state.checked} onChange={e => 
+        <input type="checkbox" defaultChecked={state.checked} onChange={e =>
           setState({ ...state, checked: !state.checked })
         } />
         {feature}
@@ -133,9 +154,11 @@ const StepElem = ({ feature, range, state, setState }) => {
           }}
           valueLabelDisplay="auto"
           min={rmin}
-          max={rmax} />
+          max={rmax}
+          size="small"
+        />
       </div>
-      </div>
+    </div>
   )
 }
 

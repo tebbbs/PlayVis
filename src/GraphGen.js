@@ -11,8 +11,7 @@ const tree2List = (node) => {
    // unroll children
    return unrolled.flatMap(tree2List);
    
- }
-
+}
 
 const DAGexpandRel = (songs, frontier, step, stepNum) => {
   let links = [];
@@ -28,7 +27,7 @@ const DAGexpandRel = (songs, frontier, step, stepNum) => {
     return next;
   });
   const nFront = Array.from(new Set(nextFront));
-  return { frontier: nFront.map(node => ({ ...node, stepNum: stepNum })), links };
+  return { frontier: nFront.map(node => ({ ...node, stepNum: stepNum, stepcol: step.colour })), links };
 
 }
 
@@ -89,15 +88,15 @@ export const genDAG2 = (stepTree, songs) => {
   const steps = tree2List(stepTree);
 
   let frontier = findAbs(songs, steps[0].state);
-  frontier.forEach((song, i) => frontier[i] = { ...song, stepNum: 0 });
+  frontier.forEach((song, i) => frontier[i] = { ...song, stepNum: 0, stepcol: steps[0].colour });
 
-  let links = []
-  let nodes = [frontier]
-  let unions = []
+  let links = [];
+  let nodes = [frontier];
+  let unions = [];
 
   for (let i = 1; i < steps.length; i++) {
     const result = steps[i].isRel ?
-      DAGexpandRel(songs, frontier, steps[i], i)
+        DAGexpandRel(songs, frontier, steps[i], i)
       : DAGexpandAbs(songs, frontier, steps[i], i);
 
     if (!steps[i].isRel) unions.push(result.union)
@@ -122,6 +121,9 @@ export const genDAG2 = (stepTree, songs) => {
   nodes = nodes.flat().map(formatDAGNode);
   nodes.push(...unions);
 
+  if (!nodes.length) console.log("Empty nodes list")
+  if (!links.length) console.log("Empty links list")
+
   return { nodes, linkprops: links }
 }
 
@@ -132,6 +134,7 @@ const formatDAGNode = (node) => {
     trackid: node.track.id,
     imgurl: node.track.album.images[1].url,
     isUnion: false,
+    stepcol: node.stepcol,
     attributes: {
       artist: node.track.artists[0].name,
       genre: node.track.fullArtist.genres[0],
@@ -142,5 +145,3 @@ const formatDAGNode = (node) => {
     }
   }
 }
-
-
