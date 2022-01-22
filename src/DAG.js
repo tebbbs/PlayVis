@@ -1,269 +1,128 @@
-import React from 'react';
-import * as d3 from 'd3';
-import * as d3Dag from 'd3-dag'
+export default class DAG {
 
-export const useD3 = (renderFn, dependencies) => {
-  const ref = React.useRef();
+  constructor(nodes, links) {
+    this.nodes = nodes;
+    this.links = links;
+  }
 
+  getRoutesTo(trackid, stepNum) {
+    // Copy nodes and links
+    let nodes = this.nodes.map(arr => arr.slice());
+    let links = this.links.map(arr => arr.slice());
 
-  React.useEffect(() => {
-    renderFn(d3.select(ref.current));
-    return () => { };
-    // eslint-disable-next-line
-  }, dependencies)
+    // Remove songs in this row
+    nodes[stepNum] = nodes[stepNum].filter(n => n.id === trackid)
 
-  return ref;
+    // Remove songs that don't go through trackid
+    if (stepNum > 0) {
+      // In current row, remove links that aren't to trackid
+      links[stepNum - 1] = links[stepNum - 1]
+        .filter(l => l.target === trackid + stepNum);
+      // Go back and remove all paths that don't lead to trackid
+      for (let j = stepNum - 1; j >= 0; j--) {
+        // find nodes to remove, i.e. nodes with no links coming from them
+        const srcs = links[j].map(l => l.source);
+        const idsToRemove = nodes[j]
+          .map(node => node.id + j)
+          .filter(id => !srcs.includes(id));
+        // remove links to nodes that are to be removed
+        if (j > 0)
+          links[j - 1] = links[j - 1].filter(l => !idsToRemove.includes(l.target));
+        // remove nodes
+        nodes[j] = nodes[j].filter(n => !idsToRemove.includes(n.id + j));
+      }
+    }
+    return [ nodes, links ]
+  }
+
+  getRoutesFrom(trackid, stepNum) {
+    // Copy nodes and links
+    let nodes = this.nodes.map(arr => arr.slice());
+    let links = this.links.map(arr => arr.slice());
+    
+    // Remove songs in this row
+    nodes[stepNum] = nodes[stepNum].filter(n => n.id === trackid)
+    // Remove songs that aren't reachable from trackid
+    if (stepNum < nodes.length - 1) {
+      // In next row, remove links that aren't reachable from trackid
+      links[stepNum] = links[stepNum]
+        .filter(l => l.source === trackid + stepNum);
+      // Go forward and remove all paths that don't start from trackid
+      for (let j = stepNum + 1; j < nodes.length; j++) {
+        // find nodes to remove, i.e. nodes with no links to them
+        const tgts = links[j - 1].map(l => l.target);
+        const idsToRemove = nodes[j]
+          .map(node => node.id + j)
+          .filter(id => !tgts.includes(id));
+        // remove links from nodes that are to be removed
+        if (j < nodes.length - 1)
+          links[j] = links[j].filter(l => !idsToRemove.includes(l.source));
+        // remove nodes
+        nodes[j] = nodes[j].filter(n => !idsToRemove.includes(n.id + j));
+      }
+    }
+
+    return [ nodes, links ]
+  }
+
+  chooseSong(trackid, stepNum) {
+    const [nodes1, links1] = this.getRoutesTo(trackid, stepNum);
+    const [nodes2, links2] = this.getRoutesFrom(trackid, stepNum);
+    const nodesNew = [ ...(nodes1.slice(0, stepNum)), ...(nodes2.slice(stepNum)) ];
+    const linksNew = [ ...(links1.slice(0, stepNum)), ...(links2.slice(stepNum)) ];
+    return [ nodesNew, linksNew ]
+
+  }
 
 }
 
-export const DAG2 = ({ data, setPlaylist }) => {
+// MUTATING FUNCTIONS
 
-  const { nodes, linkprops } = data
+// pruneRoutesTo(trackid, stepNum) {
+//   // Remove songs in this row
+//   this.nodes[stepNum] = this.nodes[stepNum].filter(n => n.id === trackid)
 
-  const linkpairs = linkprops.map(linkObj => [linkObj.source, linkObj.target])
+//   // Remove songs that don't go through trackid
+//   if (stepNum > 0) {
+//     // In current row, remove links that aren't to trackid
+//     this.links[stepNum - 1] = this.links[stepNum - 1]
+//       .filter(l => l.target === trackid + stepNum);
+//     // Go back and remove all paths that don't lead to trackid
+//     for (let j = stepNum - 1; j >= 0; j--) {
+//       // find nodes to remove, i.e. nodes with no links coming from them
+//       const srcs = this.links[j].map(l => l.source);
+//       const idsToRemove = this.nodes[j]
+//         .map(node => node.id + j)
+//         .filter(id => !srcs.includes(id));
+//       // remove links to nodes that are to be removed
+//       if (j > 0)
+//         this.links[j - 1] = this.links[j - 1].filter(l => !idsToRemove.includes(l.target));
+//       // remove nodes
+//       this.nodes[j] = this.nodes[j].filter(n => !idsToRemove.includes(n.id + j));
+//     }
+//   }
+// }
 
-  const ref = useD3(
-    (svgIn) => {
-
-      svgIn.selectAll("*").remove();
-
-      if (!nodes.length || !linkprops.length) {
-        console.log("no paths")
-        return;
-      }
-
-      // helper variables
-      let i = 0;
-      const duration = 750;
-      const x_sep = 120;
-      const y_sep = 60;
-
-      // initialize panning, zooming
-      const zoom = d3
-        .zoom()
-        .scaleExtent([0.8, 1.2]) // zoom from 80% to 120%
-        // TODO: translateExtent()
-        .on("zoom", (event) =>
-          g.attr("transform", event.transform))
-
-      const svg = svgIn.call(zoom)
-
-      // append group element
-      const g = svg.append("g");
-
-      // declare a dag layout
-      const tree = d3Dag
-        .sugiyama()
-        .layering(d3Dag.layeringSimplex())
-        // might have to remove "large" at some point
-        .decross(d3Dag.decrossOpt().large("large"))
-        .coord(d3Dag.coordQuad())
-        .nodeSize(() => [y_sep, x_sep]);
-
-      // make dag from edge list
-      let dag = d3Dag.dagConnect()(linkpairs);
-      if (dag.id !== undefined) {
-        const root = dag.copy();
-        root.id = undefined;
-        root.children = [dag];
-        dag = root;
-      }
-
-      // prepare node data
-      var all_nodes = dag.descendants();
-      all_nodes.forEach((n) => {
-        const id = n.data.id;
-        n.data = nodes.find(node => node.id === id);
-        n.inserted_nodes = [];
-        n.inserted_roots = [];
-        n.neighbors = [];
-        n.visible = true;
-        n.inserted_connections = [];
-      });
-
-      // find root node and assign data
-      const root = all_nodes[0];
-      root.visible = true;
-      root.x0 = 50;
-      root.y0 = 50;
-
-      // overwrite dag root nodes
-      dag.children = [root];
-
-      // draw dag
-      update(root);
-
-      function update(source) {
-        // Assigns the x and y position for the nodes
-        tree(dag);
-        const nodes = dag.descendants();
-        const links = dag.links();
-
-        // ****************** Nodes section ***************************
-
-        // Update the nodes...
-        var node = g
-          .selectAll("g.node")
-          .data(nodes, d => d.id || (d.id = ++i))
-
-        // Enter any new nodes at the parent's previous position.
-        var nodeEnter = node
-          .enter()
-          .filter(d => !d.data.isUnion)
-          .append("g")
-          .attr("class", "node")
-          .attr("transform", function (d) {
-            return "translate(" + source.y0 + "," + source.x0 + ")";
-          })
-          // .on("mouseover", tip.show)
-          // .on("mouseout", tip.hide)
-          .attr("visible", true);
-
-        // Add album art
-        nodeEnter
-          .append("svg:image")
-          .attr("href", d => d.data.imgurl)
-          .attr("x", _ => -25)
-          .attr("y", _ => -25)
-          .attr("height", 50)
-          .attr("width", 50)
-
-        // Add names as node labels
-        nodeEnter
-          .append("text")
-          .attr("dy", 20)
-          .attr("x", 0)
-          .attr("text-anchor", "start")
-          .text((d) => d.data.name);
-
-        // Add click behaviour
-
-        nodeEnter
-          .on("click", (event, d) => {
-          const idClicked = d.data.trackid;
-          let nodeHighlight = d3
-            .selectAll("g.node")
-            .filter(node => node.data.trackid === idClicked);
-
-          nodeHighlight
-            .append("rect")
-            .attr("x", _ => -27)
-            .attr("y", _ => -27)
-            .attr("height", 54)
-            .attr("width", 54)
-            .attr("fill", "#cccccc80")
-            .attr("stroke", d.data.stepcol);
-
-            setPlaylist(prev => [...prev, d.data]);
-
-        });
-
-        // UPDATE
-        var nodeUpdate = nodeEnter.merge(node);
-
-        // Transition to the proper position for the node
-        nodeUpdate
-          .transition()
-          .duration(duration)
-          .attr("transform", function (d) {
-            return "translate(" + d.y + "," + d.x + ")";
-          });
-
-        // Remove any exiting nodes
-        var nodeExit = node
-          .exit()
-          .transition()
-          .duration(duration)
-          .attr("transform", function (d) {
-            return "translate(" + source.y + "," + source.x + ")";
-          })
-          .attr("visible", false)
-          .remove();
-
-        // On exit reduce the opacity of text labels
-        nodeExit.select("text").style("fill-opacity", 1e-6);
-
-        // ****************** links section ***************************
-
-        // Update the links...
-        var link = g.selectAll("path.link").data(links, d => d.source.id + d.target.id);
-
-        // Enter any new links at the parent's previous position.
-        var linkEnter = link
-          .enter()
-          .insert("path", "g")
-          .attr("class", "link")
-          .attr("d", function (d) {
-            var o = { x: source.x0, y: source.y0 };
-            return diagonal(o, o);
-          })
-          .style("stroke", d => {
-            const lprops = linkprops.find(l => d.data[0] === l.source && d.data[1] === l.target)
-            return lprops.colour
-          });
-
-        // UPDATE
-        var linkUpdate = linkEnter.merge(link);
-
-        // Transition back to the parent element position
-        linkUpdate
-          .transition()
-          .duration(duration)
-          .attr("d", d => diagonal(d.source, d.target));
-
-        // Remove any exiting links
-        link
-          .exit()
-          .transition()
-          .duration(duration)
-          .attr("d", function (d) {
-            var o = { x: source.x, y: source.y };
-            return diagonal(o, o);
-          })
-          .remove();
-
-        // expanding a big subgraph moves the entire dag out of the window
-        // to prevent this, cancel any transformations in y-direction
-        svg
-          .transition()
-          .duration(duration)
-          .call(
-            zoom.transform,
-            d3
-              .zoomTransform(g.node())
-              .translate(-(source.y - source.y0), -(source.x - source.x0))
-          );
-
-        // Store the old positions for transition.
-        nodes.forEach(function (d) {
-          d.x0 = d.x;
-          d.y0 = d.y;
-        });
-
-        // Creates a curved (diagonal) path from parent to the child nodes
-        function diagonal(s, d) {
-          const path = `M ${s.y} ${s.x}
-      C ${(s.y + d.y) / 2} ${s.x},
-        ${(s.y + d.y) / 2} ${d.x},
-        ${d.y} ${d.x}`;
-
-          return path;
-        }
-      }
-    }, [data]
-  )
-
-  return (
-    <svg
-      ref={ref}
-      style={{
-        height: "100%",
-        width: "100%",
-        marginRight: "0px",
-        marginLeft: "0px"
-      }}
-    />
-  )
-
-}
-
+// pruneRoutesFrom(trackid, stepNum) {
+//   // Remove songs in this row
+//   this.nodes[stepNum] = this.nodes[stepNum].filter(n => n.id === trackid)
+//   // Remove songs that aren't reachable from trackid
+//   if (stepNum < this.nodes.length - 1) {
+//     // In next row, remove links that aren't reachable from trackid
+//     this.links[stepNum] = this.links[stepNum]
+//       .filter(l => l.source === trackid + stepNum);
+//     // Go forward and remove all paths that don't start from trackid
+//     for (let j = stepNum + 1; j < this.nodes.length; j++) {
+//       // find nodes to remove, i.e. nodes with no links to them
+//       const tgts = this.links[j - 1].map(l => l.target);
+//       const idsToRemove = this.nodes[j]
+//         .map(node => node.id + j)
+//         .filter(id => !tgts.includes(id));
+//       // remove links from nodes that are to be removed
+//       if (j < this.nodes.length - 1)
+//         this.links[j] = this.links[j].filter(l => !idsToRemove.includes(l.source));
+//       // remove nodes
+//       this.nodes[j] = this.nodes[j].filter(n => !idsToRemove.includes(n.id + j));
+//     }
+//   }
+// }

@@ -30,6 +30,13 @@ code {
   border-radius: 5px;
 }
 
+.groupdiv {
+  font-size: small;
+  padding: 0px;
+  margin: 5px;
+  border-radius: 5px;
+}
+
 .stepelem {
   margin: 0px 10px;
   display: inline-block;
@@ -44,17 +51,6 @@ code {
   text-align: center;
   width: 30px ;
 }
-
-/* .recNameInput { 
-  border: 1;
-  border-radius: 5px;
-  margin: 10px;
-  padding: 9px 22px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 16px;
-} */
 
 .arrange-horizontally > * {
   display: inline-block;
@@ -71,10 +67,6 @@ button {
   padding: 5px 10px;
   text-align: center;
   font-size: small;
-}
-
-.dagdiv {
-  overflow: scroll;
 }
 
 .node text {
@@ -98,6 +90,13 @@ button {
   overflow: scroll;
 }
 
+.dagdiv {
+  overflow: scroll;
+}
+
+
 .playlistdiv {
   background-color: #EEEEEE;
+  height: 80vh;
+  overflow: scroll;
 }

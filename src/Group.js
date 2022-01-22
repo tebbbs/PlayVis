@@ -1,14 +1,14 @@
 import { useState } from "react"
-import { defaultRelStep, defaultAbsStep, defaultGroup } from "./GroupDefaults"
+import * as defaults from "./GroupDefaults"
 import _uniqueId from 'lodash/uniqueId'
 import { Slider } from "@mui/material"
 
 export const defaultTree = {
-  ...defaultGroup(_uniqueId()),
+  ...defaults.group(_uniqueId()),
   children: [
-    defaultAbsStep(_uniqueId()),
-    defaultRelStep(_uniqueId()),
-    defaultRelStep(_uniqueId())]
+    defaults.absStep(_uniqueId()),
+    defaults.relStep(_uniqueId()),
+    defaults.relStep(_uniqueId())]
 };
 
 export const Groups = ({ tree, setTree }) => {
@@ -47,24 +47,24 @@ const Group = ({ node, setNode, onDel }) => {
     setNode({ ...node, children: [...children, newc] });
 
   return (
-    <div style={{ backgroundColor: colour }}>
-      <div style={{display: "flex", justifyContent: "space-between", align: "center" }}>
+    <div className="groupdiv" style={{ backgroundColor: colour }}>
+      <div style={{ display: "flex", justifyContent: "space-between", align: "center" }}>
         <div>
           Loops:
           <input type="number" className="valInput" value={loops} min="1" onChange={(e) => setNode({ ...node, loops: +e.target.value })} />
         </div>
         <div>
-      <button type="button" onClick={() => setCollapsed(curr => !curr)} >{collapsed ? "Expand" : "Collapse"}</button>
-      <DelButton onDel={onDel} />
-      </div>
+          <button type="button" onClick={() => setCollapsed(curr => !curr)} >{collapsed ? "Expand" : "Collapse"}</button>
+          <DelButton onDel={onDel} />
+        </div>
       </div>
       <div style={{ padding: "0px 5px" }}>
-      {!collapsed &&
-        <>
-          {children.map(child =>
-            <Node node={child} setNode={setNode} key={child.id} onDel={() => delChild(child.id)} />)}
-          <AddChild addChild={addChild} />
-        </>}
+        {!collapsed &&
+          <>
+            {children.map(child =>
+              <Node node={child} setNode={setNode} key={child.id} onDel={() => delChild(child.id)} />)}
+            <AddChild addChild={addChild} />
+          </>}
       </div>
     </div>
   )
@@ -72,9 +72,9 @@ const Group = ({ node, setNode, onDel }) => {
 
 const AddChild = ({ addChild }) => {
 
-  const addRelStep = () => addChild(defaultRelStep(_uniqueId()));
-  const addAbsStep = () => addChild(defaultAbsStep(_uniqueId()));
-  const addGroup = () => addChild(defaultGroup(_uniqueId()));
+  const addRelStep = () => addChild(defaults.relStep(_uniqueId()));
+  const addAbsStep = () => addChild(defaults.absStep(_uniqueId()));
+  const addGroup = () => addChild(defaults.group(_uniqueId()));
 
   return (
     <div className="arrange-horizontally">
@@ -91,27 +91,17 @@ const Step = ({ node, setNode, onDel }) => {
 
   const updateState = (val) => setNode({ ...node, state: { ...node.state, ...val } });
 
-  const ranges = node.isRel ?
-    {
-      bpm: [-50, 50],
-      acous: [-50, 50],
-      dance: [-50, 50]
-    } :
-    {
-      bpm: [0, 200],
-      acous: [0, 100],
-      dance: [0, 100]
-    }
+  const ranges = defaults.ranges[(node.isRel ? "rel" : "abs")];
 
   return (
     <div className="step" style={{ backgroundColor: node.colour }}>
-      <div style={{display: "flex", justifyContent: "space-between", align: "center" }}>
-      ({node.isRel ? "rel" : "abs"} values)
+      <div style={{ display: "flex", justifyContent: "space-between", align: "center" }}>
+        ({node.isRel ? "rel" : "abs"} values)
         <div>
           Loops:
           <input type="number" className="valInput" value={node.loops} min="1" onChange={(e) => setNode({ ...node, loops: +e.target.value })} />
         </div>
-      <DelButton onDel={onDel} />
+        <DelButton onDel={onDel} />
       </div>
       <div>
         <StepElem feature="BPM   " range={ranges.bpm} state={bpm} setState={bpm => updateState({ bpm })} />
@@ -125,14 +115,12 @@ const Step = ({ node, setNode, onDel }) => {
 const DelButton = ({ onDel }) => {
   return (
     <button type="button" style={
-      { 
+      {
         backgroundColor: "red",
       }}
       onClick={onDel}>x</button>
   )
 }
-
-
 
 const StepElem = ({ feature, range, state, setState }) => {
   const [rmin, rmax] = range

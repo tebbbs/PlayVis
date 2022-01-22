@@ -1,16 +1,18 @@
+import DAG from './DAG'
+
 // probably need to change this to something more automata 
 // like to handle 'max'/'inf' loop options
 // side note: would be good to follow 'max' by an absolute step to 'reset' things
-const tree2List = (node) => { 
-  if (node.isStep) 
-     return Array(node.loops).fill(node)
+const tree2List = (node) => {
+  if (node.isStep)
+    return Array(node.loops).fill(node)
 
   // unroll this step
-   const unrolled = Array(node.loops).fill(node.children).flat()
- 
-   // unroll children
-   return unrolled.flatMap(tree2List);
-   
+  const unrolled = Array(node.loops).fill(node.children).flat()
+
+  // unroll children
+  return unrolled.flatMap(tree2List);
+
 }
 
 const DAGexpandRel = (songs, frontier, step, stepNum) => {
@@ -26,8 +28,9 @@ const DAGexpandRel = (songs, frontier, step, stepNum) => {
     })));
     return next;
   });
-  const nFront = Array.from(new Set(nextFront));
-  return { frontier: nFront.map(node => ({ ...node, stepNum: stepNum, stepcol: step.colour })), links };
+  const nFront = Array.from(new Set(nextFront))
+                  .map(node => ({ ...node, stepNum, stepcol: step.colour }));
+  return { frontier: nFront, links };
 
 }
 
@@ -53,9 +56,10 @@ const DAGexpandAbs = (songs, frontier, step, stepNum) => {
   );
   const links = [...l1s, ...l2s]
 
-  const nFront = Array.from(new Set(nextFront));
+  const nFront = Array.from(new Set(nextFront))
+                  .map(node => ({ ...node, stepNum, stepcol: step.colour }));
 
-  return { frontier: nFront.map(node => ({ ...node, stepNum: stepNum })), links, union };
+  return { frontier: nFront, links, union };
 
 
 }
@@ -75,8 +79,6 @@ const findRel = (songs, curr, constraints) => {
 const findAbs = (songs, constraints) => {
   const { bpm, acous, dance } = constraints;
 
-  // TODO: make absolute step interface better
-
   return songs.filter(song =>
     (!bpm.checked || (bpm.min < song.bpm && song.bpm < bpm.max)) &&
     (!acous.checked || (acous.min / 100 < song.acous && song.acous < acous.max / 100)) &&
@@ -87,8 +89,8 @@ const findAbs = (songs, constraints) => {
 export const genDAG2 = (stepTree, songs) => {
   const steps = tree2List(stepTree);
 
-  let frontier = findAbs(songs, steps[0].state);
-  frontier.forEach((song, i) => frontier[i] = { ...song, stepNum: 0, stepcol: steps[0].colour });
+  let frontier = findAbs(songs, steps[0].state)
+    .map(song => ({ ...song, stepNum: 0, stepcol: steps[0].colour }));
 
   let links = [];
   let nodes = [frontier];
@@ -96,52 +98,31 @@ export const genDAG2 = (stepTree, songs) => {
 
   for (let i = 1; i < steps.length; i++) {
     const result = steps[i].isRel ?
-        DAGexpandRel(songs, frontier, steps[i], i)
+      DAGexpandRel(songs, frontier, steps[i], i)
       : DAGexpandAbs(songs, frontier, steps[i], i);
 
     if (!steps[i].isRel) unions.push(result.union)
 
     frontier = result.frontier;
-    links = [...links, ...result.links];
+    links.push(result.links);
 
     for (let j = i - 1; j >= 0; j--) {
       // find nodes to remove, i.e. nodes with no links coming from them
-      const srcs = links.map(l => l.source);
-      const rem_col = nodes[j].filter(node => !srcs.includes(node.id + j));
-      const rem_ids = rem_col.map(node => node.id + j);
+      const srcs = links[j].map(l => l.source);
+      const idsToRemove = nodes[j]
+        .map(node => node.id + j)
+        .filter(id => !srcs.includes(id));
       // remove links to nodes that are to be removed
-      links = links.filter(l => !rem_ids.includes(l.target));
+      if (j > 0)
+        links[j - 1] = links[j - 1].filter(l => !idsToRemove.includes(l.target));
       // remove nodes
-      nodes[j] = nodes[j].filter(n => !rem_ids.includes(n.id + n.stepNum));
+      nodes[j] = nodes[j].filter(n => !idsToRemove.includes(n.id + j));
     }
 
     nodes.push(result.frontier);
   }
 
-  nodes = nodes.flat().map(formatDAGNode);
   nodes.push(...unions);
 
-  if (!nodes.length) console.log("Empty nodes list")
-  if (!links.length) console.log("Empty links list")
-
-  return { nodes, linkprops: links }
-}
-
-const formatDAGNode = (node) => {
-  return {
-    name: node.track.name,
-    id: node.id + node.stepNum,
-    trackid: node.track.id,
-    imgurl: node.track.album.images[1].url,
-    isUnion: false,
-    stepcol: node.stepcol,
-    attributes: {
-      artist: node.track.artists[0].name,
-      genre: node.track.fullArtist.genres[0],
-      bpm: node.bpm,
-      acous: node.acous,
-      dance: node.dance,
-      strrep: `bpm: ${node.bpm} acous: ${node.acous} dance: ${node.dance}`,
-    }
-  }
+  return new DAG(nodes, links);
 }
