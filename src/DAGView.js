@@ -17,7 +17,7 @@ export const useD3 = (renderFn, dependencies) => {
 
 
 const formatDAGNode = (node) => {
-  return {
+  return node.isUnion ? node : {
     name: node.track.name,
     id: node.id + node.stepNum,
     trackid: node.track.id,
