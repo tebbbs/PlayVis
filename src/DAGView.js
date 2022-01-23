@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import * as d3 from 'd3';
 import * as d3Dag from 'd3-dag';
 
@@ -15,7 +15,6 @@ export const useD3 = (renderFn, dependencies) => {
 
 }
 
-
 const formatDAGNode = (node) => {
   return node.isUnion ? node : {
     name: node.track.name,
@@ -23,6 +22,7 @@ const formatDAGNode = (node) => {
     trackid: node.track.id,
     imgurl: node.track.album.images[1].url,
     isUnion: false,
+    isClicked: false,
     stepcol: node.stepcol,
     stepNum: node.stepNum,
     attributes: {
@@ -36,7 +36,7 @@ const formatDAGNode = (node) => {
   }
 }
 
-export const DAGView = ({ data, setPlaylist }) => {
+export const DAGView = ({ data, setPlaylist, reload }) => {
 
   // Format data for d3-dag
 
@@ -45,17 +45,19 @@ export const DAGView = ({ data, setPlaylist }) => {
   const linkpairs = linkprops.map(linkObj => [linkObj.source, linkObj.target]);
 
   const ref = useD3(
-    (svgIn) => {
+    (svg) => {
 
-      svgIn.selectAll("*").remove();
+      // Remove previous nodes 
+      // Would be nice to use d3 enter-update-exit instead but not sure how yet
+      svg.selectAll("*").remove();
 
+      // TODO: show this to user
       if (!nodelist.length || !linkprops.length) {
         console.log("no paths")
         return;
       }
 
       // helper variables
-      let i = 0;
       const duration = 750;
       const x_sep = 120;
       const y_sep = 60;
@@ -67,7 +69,8 @@ export const DAGView = ({ data, setPlaylist }) => {
         // TODO: translateExtent()
         .on("zoom", (event) => g.attr("transform", event.transform))
 
-      const svg = svgIn
+      // disable scroll zooming
+      svg
         .call(zoom)
         .on("wheel.zoom", null);
 
@@ -127,7 +130,7 @@ export const DAGView = ({ data, setPlaylist }) => {
         // Update the nodes...
         var node = g
           .selectAll("g.node")
-          .data(nodes, d => d.id || (d.id = ++i))
+          .data(nodes, d => d.id)
 
         // Enter any new nodes at the parent's previous position.
         var nodeEnter = node
@@ -163,6 +166,9 @@ export const DAGView = ({ data, setPlaylist }) => {
 
         nodeEnter
           .on("click", (event, d) => {
+
+            // TODO: check for d.data.isClicked here
+
             const { id, trackid, stepNum } = d.data;
             const idClicked = trackid;
 
@@ -190,7 +196,6 @@ export const DAGView = ({ data, setPlaylist }) => {
             hide(nodeHide);
             hide(linkHide);
 
-
             // Find other instances of the clicked song
             let nodeHighlight = d3
               .selectAll("g.node")
@@ -207,14 +212,17 @@ export const DAGView = ({ data, setPlaylist }) => {
               .attr("stroke", d.data.stepcol);
 
             // Reduce opacity of other instances
-            let nodeGreyOut = nodeHighlight
+            nodeHighlight
               .filter(node => node.data.id !== id)
               .attr("fill", "#cccccc80")
 
             
             // Add song to playlist
-            // TODO
-            setPlaylist(prev => [...prev, d.data]);
+            setPlaylist(prev => {
+                prev.splice(stepNum, 1, d.data);
+                // return copy to trigger re-redner
+                return [...prev];
+              });
 
           });
 
@@ -309,7 +317,8 @@ export const DAGView = ({ data, setPlaylist }) => {
           return path;
         }
       }
-    }, [data.nodes.flat().length]
+
+    }, [reload]
   )
 
   return (

@@ -13,15 +13,6 @@ code {
 
 }
 
-.stepsdiv {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  max-height: 700px;
-  scroll-behavior: smooth;
-  overflow-y: scroll;
-}
-
 .step {
   font-size: small;
   background-color: #EEEEEE;
@@ -59,7 +50,7 @@ code {
 }
 
 button {
-  background-color: #0274FF; 
+  background-color: #2e80a0; 
   border: none;
   border-radius: 5px;
   color: white;
@@ -81,22 +72,23 @@ button {
 
 .gridcontainer { 
   display: grid;
-  grid-column-gap: 20px;
+  grid-column-gap: 5px;
   grid-template-columns: 3fr 6fr 3fr;
+  height: 80vh;
 }
 
 .recipediv {
-  height: 80vh;
+  background-color: #EEEEEE;
   overflow: scroll;
 }
 
 .dagdiv {
+  background-color: #EEEEEE;
   overflow: scroll;
 }
 
 
 .playlistdiv {
   background-color: #EEEEEE;
-  height: 80vh;
   overflow: scroll;
 }

@@ -1,5 +1,3 @@
-import React from 'react';
-import { SpotifyApiContext, User } from 'react-spotify-api';
 import { SpotifyAuth, Scopes } from 'react-spotify-auth';
 import SpotifyWebApi from 'spotify-web-api-js';
 import 'react-spotify-auth/dist/index.css'
@@ -46,20 +44,8 @@ export async function getAllUserTracks(token) {
 
 }
 
-export const SpotifyLogin = ({ token, setToken }) => {
+export const SpotifyLogin = ({ setToken }) => {
   return (
-    <div>
-      {token ? (
-        <SpotifyApiContext.Provider value={token}>
-          <User>
-            {({ data }) =>
-              data ? (
-                <span>{data.display_name} logged in</span>
-              ) : null
-            }
-          </User>
-        </SpotifyApiContext.Provider>
-      ) : (
         // Display the login page
         <SpotifyAuth
           redirectUri='http://localhost:3000/'
@@ -68,10 +54,8 @@ export const SpotifyLogin = ({ token, setToken }) => {
           scopes={
             [Scopes.playlistReadCollaborative,
             Scopes.userLibraryRead]}
-          onAccessToken={(t) => setToken(t)}
+          onAccessToken={setToken}
         />
-      )}
-    </div>
   )
 }
 

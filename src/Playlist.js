@@ -4,7 +4,7 @@ const Playlist = ({ tracks }) => {
 
   return (
     <>
-      {tracks.map((track, i) => <Track key={track.trackid + i} track={track}/>)}
+      {tracks.map((track, i) => <Track key={i} track={track}/>)}
     </>
   )
 
@@ -13,6 +13,8 @@ const Playlist = ({ tracks }) => {
 export default Playlist
 
 const Track = ({ track }) => {
+
+  if (!track) return <div> </div>
 
   const { attributes, imgurl, name } = track;
   const artist = attributes.artist;

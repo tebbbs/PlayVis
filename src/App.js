@@ -15,6 +15,7 @@ export default function App() {
   const [songs, setSongs] = useState();
   const [tree, setTree] = useState(defaultTree);
   const [dagData, setDagData] = useState();
+  const [dagReload, setDagReload] = useState(true);
   const [playlist, setPlaylist] = useState([]);
 
   useEffect(() => {
@@ -40,31 +41,38 @@ export default function App() {
       <h1 style={{ textAlign: "center" }}>playvis</h1>
       <Routes>
         <Route path="/" element={
-          <>
-            <div style={{ display: "flex", flexDirection: "row" }}>
-              <SpotifyLogin token={token} setToken={setToken} />
-              {songs
-                && <button type="button" onClick={() => {
-                  setDagData((genDAG2(tree, songs)));
-                  setPlaylist([]);
-                }}>Generate Graph</button>
-              }
+          !token
+            ? <div style={{ display: "flex", justifyContent: "center" }}>
+              <SpotifyLogin setToken={setToken} />
             </div>
-            <div className="gridcontainer">
+            : <>
+              <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
 
-              <div className="recipediv">
-                <Groups tree={tree} setTree={setTree} />
+                {songs
+                  ? <button type="button" onClick={() => {
+                    const dd = genDAG2(tree, songs);
+                    setDagData(dd);
+                    setDagReload(prev => !prev);
+                    setPlaylist(Array(dd.nodes.length).fill(false));
+                  }}>Generate Graph</button>
+                  : <button>Loading...</button>
+                }
               </div>
+              <div className="gridcontainer">
 
-              <div className="dagdiv">
-                {dagData && <DAGView data={dagData} setPlaylist={setPlaylist} />}
-              </div>
+                <div className="recipediv">
+                  <Groups tree={tree} setTree={setTree} />
+                </div>
 
-              <div className="playlistdiv">
-                <Playlist tracks={playlist} />
+                <div className="dagdiv">
+                  {dagData && <DAGView data={dagData} reload={dagReload} setPlaylist={setPlaylist} />}
+                </div>
+
+                <div className="playlistdiv">
+                  <Playlist tracks={playlist} />
+                </div>
               </div>
-            </div>
-          </>
+            </>
         } />
       </Routes>
     </Router>
