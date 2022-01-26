@@ -14,8 +14,14 @@ export default function App() {
   const [token, setToken] = useState(Cookies.get("spotifyAuthToken"));
   const [songs, setSongs] = useState();
   const [tree, setTree] = useState(defaultTree);
-  const [dagData, setDagData] = useState();
-  const [dagReload, setDagReload] = useState(true);
+  const [dagData, _setDagData] = useState();
+  const setDagData = (newDD) => {
+    // causes any useEffects depending on dagData to trigger every time setDagData is called
+    _setDagData(prev => {
+      if (prev) newDD.reload = !prev.reload;
+      return newDD
+    })
+  };
   const [playlist, setPlaylist] = useState([]);
 
   useEffect(() => {
@@ -52,7 +58,6 @@ export default function App() {
                   ? <button type="button" onClick={() => {
                     const dd = genDAG2(tree, songs);
                     setDagData(dd);
-                    setDagReload(prev => !prev);
                     setPlaylist(Array(dd.nodes.length).fill(false));
                   }}>Generate Graph</button>
                   : <button>Loading...</button>
@@ -65,7 +70,7 @@ export default function App() {
                 </div>
 
                 <div className="dagdiv">
-                  {dagData && <DAGView data={dagData} reload={dagReload} setPlaylist={setPlaylist} />}
+                  {dagData && <DAGView data={dagData} setData={setDagData} setPlaylist={setPlaylist} />}
                 </div>
 
                 <div className="playlistdiv">
@@ -76,7 +81,6 @@ export default function App() {
         } />
       </Routes>
     </Router>
-
   );
 }
 

@@ -24,40 +24,50 @@ const DAGexpandRel = (songs, frontier, step, stepNum) => {
       source: curr.id + (stepNum - 1),
       target: nxt.id + stepNum,
       stepid: step.id,
-      colour: step.colour
+      colour: step.colour,
+      // need a better way to do this
+      isLHalf: false,
+      isRHalf: false,
     })));
     return next;
   });
   const nFront = Array.from(new Set(nextFront))
-                  .map(node => ({ ...node, stepNum, stepcol: step.colour }));
+    .map(node => ({ ...node, stepNum, stepcol: step.colour }));
   return { frontier: nFront, links };
 
 }
 
 const DAGexpandAbs = (songs, frontier, step, stepNum) => {
+  const nextFront = findAbs(songs, step.state);
+  
+  if (!nextFront.length) {
+    return { frontier: [], links: [], union: null }
+  }
   const union = {
     id: "union-" + stepNum,
     isUnion: true,
   };
-
-  const nextFront = findAbs(songs, step.state);
   const l1s = frontier.map(curr => ({
     source: curr.id + (stepNum - 1),
     target: union.id,
     stepid: step.id,
-    colour: step.colour
+    colour: step.colour,
+    isLHalf: true,
+    isRHalf: false
   }));
   const l2s = nextFront.map(nxt => ({
     source: union.id,
     target: nxt.id + stepNum,
     stepid: step.id,
-    colour: step.colour
-  })
-  );
-  const links = [...l1s, ...l2s]
+    colour: step.colour,
+    isLHalf: false,
+    isRHalf: true,
+  }));
 
   const nFront = Array.from(new Set(nextFront))
-                  .map(node => ({ ...node, stepNum, stepcol: step.colour }));
+    .map(node => ({ ...node, stepNum, stepcol: step.colour }));
+
+  const links = [...l1s, ...l2s]
 
   return { frontier: nFront, links, union };
 
@@ -91,7 +101,7 @@ export const genDAG2 = (stepTree, songs) => {
 
   let frontier = findAbs(songs, steps[0].state)
     .map(song => ({ ...song, stepNum: 0, stepcol: steps[0].colour }));
-
+  
   let links = [];
   let nodes = [frontier];
   let unions = [];
@@ -101,28 +111,28 @@ export const genDAG2 = (stepTree, songs) => {
       DAGexpandRel(songs, frontier, steps[i], i)
       : DAGexpandAbs(songs, frontier, steps[i], i);
 
-    if (!steps[i].isRel) unions.push(result.union)
-
     frontier = result.frontier;
     links.push(result.links);
 
-    for (let j = i - 1; j >= 0; j--) {
-      // find nodes to remove, i.e. nodes with no links coming from them
-      const srcs = links[j].map(l => l.source);
-      const idsToRemove = nodes[j]
-        .map(node => node.id + j)
-        .filter(id => !srcs.includes(id));
-      // remove links to nodes that are to be removed
-      if (j > 0)
-        links[j - 1] = links[j - 1].filter(l => !idsToRemove.includes(l.target));
-      // remove nodes
-      nodes[j] = nodes[j].filter(n => !idsToRemove.includes(n.id + j));
+    if (!steps[i].isRel && result.frontier.length) {
+      unions.push(result.union);
     }
-
+    else {
+      for (let j = i - 1; j >= 0; j--) {
+        // find nodes to remove, i.e. nodes with no links coming from them
+        const srcs = links[j].map(l => l.source);
+        const idsToRemove = nodes[j]
+          .map(node => node.id + j)
+          .filter(id => !srcs.includes(id));
+        // remove links to nodes that are to be removed
+        if (j > 0)
+          links[j - 1] = links[j - 1].filter(l => !idsToRemove.includes(l.target));
+        // remove nodes
+        nodes[j] = nodes[j].filter(n => !idsToRemove.includes(n.id + j));
+      }
+    }
     nodes.push(result.frontier);
   }
 
-  nodes.push(...unions);
-
-  return new DAG(nodes, links);
+  return new DAG(nodes, links, unions);
 }

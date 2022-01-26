@@ -22,7 +22,10 @@ const formatDAGNode = (node) => {
     trackid: node.track.id,
     imgurl: node.track.album.images[1].url,
     isUnion: false,
+    // --- not sure if I need these yet ---
     isClicked: false,
+    isHidden: false,
+    // ------------------------------------
     stepcol: node.stepcol,
     stepNum: node.stepNum,
     attributes: {
@@ -36,24 +39,41 @@ const formatDAGNode = (node) => {
   }
 }
 
-export const DAGView = ({ data, setPlaylist, reload }) => {
+export const DAGView = ({ data, setData, setPlaylist }) => {
 
   // Format data for d3-dag
+  // Adds a 'root' node - would this be better in the DAG object itself?
 
-  const nodelist = data.nodes.flat().map(formatDAGNode);
-  const linkprops = data.links.flat();
+  const nodelist = [
+    ...data.nodes.flat().map(formatDAGNode), 
+    ...data.unions,
+    { id: "root", isUnion: true }
+  ];
+  const linkprops = [
+    ...data.links.flat(),
+    ...data.nodes[0].map(n => 
+      ({ 
+        source: "root",
+        target: n.id + 0,
+        stepid: 0,
+        colour: n.stepcol,
+        isLHalf: false,
+        isRHalf: false,
+      }))
+  ];
+
   const linkpairs = linkprops.map(linkObj => [linkObj.source, linkObj.target]);
 
   const ref = useD3(
     (svg) => {
 
-      // Remove previous nodes 
-      // Would be nice to use d3 enter-update-exit instead but not sure how yet
-      svg.selectAll("*").remove();
+      // TODO: Remove all rectangles when 'Generate graph' is clicked, but not when
+      // a song is clicked
 
       // TODO: show this to user
       if (!nodelist.length || !linkprops.length) {
-        console.log("no paths")
+        svg.selectAll("*").remove();
+        alert("No graphs found for this configuration! Try changing it to be less restrictive");
         return;
       }
 
@@ -74,8 +94,10 @@ export const DAGView = ({ data, setPlaylist, reload }) => {
         .call(zoom)
         .on("wheel.zoom", null);
 
-      // append group element
-      const g = svg.append("g");
+      // append group element if not present
+      const g = svg.select("g").node()
+        ? svg.select("g")
+        : svg.append("g");
 
       // declare a dag layout
       const tree = d3Dag
@@ -88,12 +110,6 @@ export const DAGView = ({ data, setPlaylist, reload }) => {
 
       // make dag from edge list
       let dag = d3Dag.dagConnect()(linkpairs);
-      if (dag.id !== undefined) {
-        const root = dag.copy();
-        root.id = undefined;
-        root.children = [dag];
-        dag = root;
-      }
 
       // prepare node data
       var all_nodes = dag.descendants();
@@ -107,14 +123,11 @@ export const DAGView = ({ data, setPlaylist, reload }) => {
         n.inserted_connections = [];
       });
 
-      // find root node and assign data
-      const root = all_nodes[0];
+      // set root
+      const root = all_nodes.find(n => n.data.id == "root");
       root.visible = true;
-      root.x0 = 50;
-      root.y0 = 50;
-
-      // overwrite dag root nodes
-      dag.children = [root];
+      root.x0 = 0;
+      root.y0 = 0;
 
       // draw dag
       update(root);
@@ -130,7 +143,7 @@ export const DAGView = ({ data, setPlaylist, reload }) => {
         // Update the nodes...
         var node = g
           .selectAll("g.node")
-          .data(nodes, d => d.id)
+          .data(nodes, d => d.data.id)
 
         // Enter any new nodes at the parent's previous position.
         var nodeEnter = node
@@ -162,41 +175,27 @@ export const DAGView = ({ data, setPlaylist, reload }) => {
           .attr("text-anchor", "start")
           .text((d) => d.data.name);
 
+        // UPDATE
+
+        // not sure why merge doesn't work but this is ok for now
+        // https://observablehq.com/@d3/selection-join - might help
+
+        // var nodeUpdate = nodeEnter.merge(node);
+        var nodeUpdate = g.selectAll("g.node");
+
         // Add click behaviour
 
-        nodeEnter
+        nodeUpdate
           .on("click", (event, d) => {
 
             // TODO: check for d.data.isClicked here
+            // TODO: make use of d3 transitions here now that svg isn't being
+            // redrawn for each render
 
             const { id, trackid, stepNum } = d.data;
             const idClicked = trackid;
 
-            // Find nodes and links with a route through this node
-            const [nodesToKeep, linksToKeep] = data.chooseSong(trackid, stepNum);
-            // Tag node ids with stepNum 
-            const nodeIDList = nodesToKeep.map((arr, i) => arr.map(node => node.id + i)).flat();
-
-            const linkPairList = linksToKeep.flat().map(link => "" + link.source + link.target);
-
-            let nodeHide = d3
-              .selectAll("g.node")
-              .filter(node => !nodeIDList.includes(node.data.id))
-            
-            let linkHide = d3
-              .selectAll("path.link")
-              .filter(link => !linkPairList.includes("" + link.data[0] + link.data[1]));
-
-            const hide = (selection) => {
-              selection
-                .attr("opacity", 0.25)
-                .on("click", () => { })
-            }
-
-            hide(nodeHide);
-            hide(linkHide);
-
-            // Find other instances of the clicked song
+            //  Find other instances of the clicked song
             let nodeHighlight = d3
               .selectAll("g.node")
               .filter(node => node.data.trackid === idClicked);
@@ -214,9 +213,9 @@ export const DAGView = ({ data, setPlaylist, reload }) => {
             // Reduce opacity of other instances
             nodeHighlight
               .filter(node => node.data.id !== id)
+              .select("rect")
               .attr("fill", "#cccccc80")
 
-            
             // Add song to playlist
             setPlaylist(prev => {
                 prev.splice(stepNum, 1, d.data);
@@ -224,10 +223,11 @@ export const DAGView = ({ data, setPlaylist, reload }) => {
                 return [...prev];
               });
 
-          });
+            // Remove nodes and links without a route through this node
+            const newDag = data.chooseSong(trackid, stepNum);
+            setData(newDag);
 
-        // UPDATE
-        var nodeUpdate = nodeEnter.merge(node);
+          });
 
         // Transition to the proper position for the node
         nodeUpdate
@@ -252,7 +252,7 @@ export const DAGView = ({ data, setPlaylist, reload }) => {
         // ****************** links section ***************************
 
         // Update the links...
-        var link = g.selectAll("path.link").data(links, d => d.source.id + d.target.id);
+        var link = g.selectAll("path.link").data(links, l => "" + l.data[0] + l.data[1]);
 
         // Enter any new links at the parent's previous position.
         var linkEnter = link
@@ -297,8 +297,8 @@ export const DAGView = ({ data, setPlaylist, reload }) => {
             zoom.transform,
             d3
               .zoomTransform(g.node())
-              .translate(-(source.y - source.y0), 0)
-              // .translate(-(source.y - source.y0), -(source.x - source.x0))
+            // .translate(-(source.y - source.y0), 0)
+            // .translate(-(source.y - source.y0), -(source.x - source.x0))
           );
 
         // Store the old positions for transition.
@@ -318,7 +318,7 @@ export const DAGView = ({ data, setPlaylist, reload }) => {
         }
       }
 
-    }, [reload]
+    }, [data.reload]
   )
 
   return (
