@@ -45,11 +45,16 @@ export async function getAllUserTracks(token) {
 }
 
 export const SpotifyLogin = ({ setToken }) => {
+
+  const [uri, noCookie] = process.env.NODE_ENV === "development"
+    ? ["http://localhost:3000/",  false]
+    : ["https://playvis.web.app/", true];
+
   return (
         // Display the login page
         <SpotifyAuth
-          redirectUri='http://localhost:3000/'
-          //redirectUri='https://playvis.web.app/'
+          redirectUri={uri}
+          noCookie={noCookie}
           clientID='c79989282f4f40a2953b4adc36489afc'
           scopes={
             [Scopes.playlistReadCollaborative,

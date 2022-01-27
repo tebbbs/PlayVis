@@ -19,7 +19,6 @@ export default class DAG {
     // Remove songs that don't go through trackid
     if (stepNum > 0) {
       // In current row, remove links that aren't to trackid
-      console.log(links[stepNum - 1])
       links[stepNum - 1] = links[stepNum - 1]
         .filter(l => l.target === trackid + stepNum || l.isLHalf);
       // Go back and remove all paths that don't lead to trackid

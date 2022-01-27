@@ -52,19 +52,21 @@ export default function App() {
               <SpotifyLogin setToken={setToken} />
             </div>
             : <>
-              <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}>
 
-                {songs
-                  ? <button type="button" onClick={() => {
-                    const dd = genDAG2(tree, songs);
-                    setDagData(dd);
-                    setPlaylist(Array(dd.nodes.length).fill(false));
-                  }}>Generate Graph</button>
-                  : <button>Loading...</button>
-                }
-              </div>
               <div className="gridcontainer">
-
+                {/* <div style={{ display: "flex", flexDirection: "row", justifyContent: "center" }}> */}
+                <div className="gengraphdiv">
+                  {songs
+                    ? <button type="button" onClick={() => {
+                      const dd = genDAG2(tree, songs);
+                      setDagData(dd);
+                      setPlaylist(Array(dd.nodes.length).fill(false));
+                    }}>Generate Graph</button>
+                    : <button>Loading...</button>
+                  }
+                </div>
+                <div className="abovedag"></div>
+                <div className="aboveplaylist"></div>
                 <div className="recipediv">
                   <Groups tree={tree} setTree={setTree} />
                 </div>

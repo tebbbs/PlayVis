@@ -124,10 +124,11 @@ export const DAGView = ({ data, setData, setPlaylist }) => {
       });
 
       // set root
-      const root = all_nodes.find(n => n.data.id == "root");
+      const root = all_nodes.find(n => n.data.id === "root");
       root.visible = true;
       root.x0 = 0;
       root.y0 = 0;
+
 
       // draw dag
       update(root);
