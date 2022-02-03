@@ -18,7 +18,11 @@ const tree2List = (node) => {
 const DAGexpandRel = (songs, frontier, step, stepNum) => {
   let links = [];
   const nextFront = frontier.flatMap(curr => {
-    const next = findRel(songs, curr, step.state).filter(song => song.id !== curr.id);
+    const next = findRel(songs, curr, step.state)
+      .filter(song =>
+        // song.id !== curr.id
+        song.track.fullArtist.name !== curr.track.fullArtist.name && song.track.name !== curr.track.name
+      );
     links.push(...next.map(nxt =>
     ({
       source: curr.id + (stepNum - 1),
@@ -39,7 +43,7 @@ const DAGexpandRel = (songs, frontier, step, stepNum) => {
 
 const DAGexpandAbs = (songs, frontier, step, stepNum) => {
   const nextFront = findAbs(songs, step.state);
-  
+
   if (!nextFront.length) {
     return { frontier: [], links: [], union: null }
   }
@@ -101,7 +105,7 @@ export const genDAG2 = (stepTree, songs) => {
 
   let frontier = findAbs(songs, steps[0].state)
     .map(song => ({ ...song, stepNum: 0, stepcol: steps[0].colour }));
-  
+
   let links = [];
   let nodes = [frontier];
   let unions = [];
@@ -112,11 +116,13 @@ export const genDAG2 = (stepTree, songs) => {
       : DAGexpandAbs(songs, frontier, steps[i], i);
 
     frontier = result.frontier;
+
     links.push(result.links);
 
-    if (!steps[i].isRel && result.frontier.length) {
+    if (!steps[i].isRel) {
       unions.push(result.union);
     }
+
     else {
       for (let j = i - 1; j >= 0; j--) {
         // find nodes to remove, i.e. nodes with no links coming from them
@@ -129,8 +135,14 @@ export const genDAG2 = (stepTree, songs) => {
           links[j - 1] = links[j - 1].filter(l => !idsToRemove.includes(l.target));
         // remove nodes
         nodes[j] = nodes[j].filter(n => !idsToRemove.includes(n.id + j));
+
+        // remove all links to a row if all its nodes have been removed
+        // this happens if a failed rel step follows an abs step
+        if (j > 0 && nodes[j].length === 0)
+          links[j - 1] = [];
       }
     }
+
     nodes.push(result.frontier);
   }
 

@@ -18,14 +18,16 @@ export default function App() {
   const setDagData = (newDD) => {
     // causes any useEffects depending on dagData to trigger every time setDagData is called
     _setDagData(prev => {
-      if (prev) newDD.reload = !prev.reload;
-      return newDD
+      newDD.reload = prev ? !prev.reload : false;
+      console.log(newDD.dagString().nodes)
+      return newDD;
     })
   };
   const [playlist, setPlaylist] = useState([]);
 
   useEffect(() => {
-    async function fetchData() {
+    if (!token) return;
+    (async () => {
       const tracks = await getAllUserTracks(token);
       const features = await getFeatures(tracks, token);
       const songs = tracks.map((track, i) =>
@@ -37,15 +39,14 @@ export default function App() {
         dance: features[i].danceability
       }));
       setSongs(songs);
-    }
-    fetchData();
-
+    })();
   }, [token]);
 
   return (
     <Router>
       <h1 style={{ textAlign: "center" }}>playvis</h1>
       <Routes>
+        {/* // TODO: actually use routes here for login */}
         <Route path="/" element={
           !token
             ? <div style={{ display: "flex", justifyContent: "center" }}>
@@ -61,12 +62,12 @@ export default function App() {
                       const dd = genDAG2(tree, songs);
                       setDagData(dd);
                       setPlaylist(Array(dd.nodes.length).fill(false));
-                    }}>Generate Graph</button>
+                    }}>Generate Map</button>
                     : <button>Loading...</button>
                   }
                 </div>
                 <div className="abovedag">
-                  <h3>Graph</h3>
+                  <h3>Map</h3>
                 </div>
                 <div className="aboveplaylist">
                   <h3>Playlist</h3>
@@ -100,7 +101,8 @@ const howto =
     playvis takes this list of criteria and produces a 'map', or graph, which shows paths between songs.  Each path from left to right is a potential playlist that satisfies the criteria. The final playlist is created by selecting songs from this graph, which changes with each selection to remove any songs that become unreachable after a song is selected.
 
     <h3>Specification</h3>
-
+    Each 'step' in the specification corresponds to one song in the playlist. A step is made up of criteria, and each step finds all songs that fit the criteria for that position in the playlist.
+    <br></br><br></br>
     Steps labelled (abs values) will find all songs that meet the criteria - e.g., 120-140 BPM with an acoustic-ness score of 0-30% and a danceability score of 40-70%.
     <br></br><br></br>
     Steps labelled (rel values) will find all songs with differences of features that are within the given range for any of the songs found in the previous step. For example, all songs that are 10-20% faster and 20-30% more danceable.

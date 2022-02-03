@@ -4,8 +4,6 @@ export default class DAG {
     this.nodes = nodes;
     this.links = links;
     this.unions = unions;
-    // Should have a better solution than this ideally
-    this.reload = false;
   }
 
   getRoutesTo(trackid, stepNum) {
@@ -95,8 +93,10 @@ export default class DAG {
     return this.links.map(
       (arr, i) => arr.map(
         l => {
-          const src = this.nodes[i].find(n => "" + n.id + i === l.source).track.name;
-          const tgt = this.nodes[i + 1].find(n => "" + n.id + (i + 1) === l.target).track.name;
+          let srcNode  = this.nodes[i].find(n => "" + n.id + i === l.source);
+          const src = srcNode ? srcNode.track.name : this.unions.find(u => u.id === l.source).id;
+          const tgtNode = this.nodes[i + 1].find(n => "" + n.id + (i + 1) === l.target);
+          const tgt = tgtNode ? tgtNode.track.name : this.unions.find(u => u.id === l.target).id;
           return `${src} -> ${tgt}`
         }
       )

@@ -9,7 +9,7 @@ const relStepState = {
 const absStepState = {
   bpm: { checked: true, min: 150, max: 180 },
   acous: { checked: true, min: 0, max: 30 },
-  dance: { checked: true, min: 0, max: 100 }
+  dance: { checked: true, min: 65, max: 100 }
 };
 
 export const ranges =

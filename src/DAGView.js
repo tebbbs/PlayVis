@@ -22,10 +22,6 @@ const formatDAGNode = (node) => {
     trackid: node.track.id,
     imgurl: node.track.album.images[1].url,
     isUnion: false,
-    // --- not sure if I need these yet ---
-    isClicked: false,
-    isHidden: false,
-    // ------------------------------------
     stepcol: node.stepcol,
     stepNum: node.stepNum,
     attributes: {
@@ -45,21 +41,21 @@ export const DAGView = ({ data, setData, setPlaylist }) => {
   // Adds a 'root' node - would this be better in the DAG object itself?
 
   const nodelist = [
-    ...data.nodes.flat().map(formatDAGNode), 
+    ...data.nodes.flat().map(formatDAGNode),
     ...data.unions,
     { id: "root", isUnion: true }
   ];
   const linkprops = [
     ...data.links.flat(),
-    ...data.nodes[0].map(n => 
-      ({ 
-        source: "root",
-        target: n.id + 0,
-        stepid: 0,
-        colour: n.stepcol,
-        isLHalf: false,
-        isRHalf: false,
-      }))
+    ...data.nodes[0].map(n =>
+    ({
+      source: "root",
+      target: n.id + 0,
+      stepid: 0,
+      colour: n.stepcol,
+      isLHalf: false,
+      isRHalf: false,
+    }))
   ];
 
   const linkpairs = linkprops.map(linkObj => [linkObj.source, linkObj.target]);
@@ -80,7 +76,7 @@ export const DAGView = ({ data, setData, setPlaylist }) => {
       // helper variables
       const duration = 750;
       const x_sep = 120;
-      const y_sep = 60;
+      const y_sep = 80;
 
       // initialize panning, zooming
       const zoom = d3
@@ -171,8 +167,8 @@ export const DAGView = ({ data, setData, setPlaylist }) => {
         // Add names as node labels
         nodeEnter
           .append("text")
-          .attr("dy", 20)
-          .attr("x", 0)
+          .attr("dy", 40)
+          .attr("dx", -25)
           .attr("text-anchor", "start")
           .text((d) => d.data.name);
 
@@ -219,10 +215,10 @@ export const DAGView = ({ data, setData, setPlaylist }) => {
 
             // Add song to playlist
             setPlaylist(prev => {
-                prev.splice(stepNum, 1, d.data);
-                // return copy to trigger re-redner
-                return [...prev];
-              });
+              prev.splice(stepNum, 1, d.data);
+              // return copy to trigger re-redner
+              return [...prev];
+            });
 
             // Remove nodes and links without a route through this node
             const newDag = data.chooseSong(trackid, stepNum);
@@ -260,7 +256,7 @@ export const DAGView = ({ data, setData, setPlaylist }) => {
           .enter()
           .insert("path", "g")
           .attr("class", "link")
-          .attr("d", (d) => {
+          .attr("d", d => {
             const o = { x: source.x0, y: source.y0 };
             return diagonal(o, o);
           })
@@ -323,15 +319,18 @@ export const DAGView = ({ data, setData, setPlaylist }) => {
   )
 
   return (
-    <svg
-      ref={ref}
-      style={{
-        height: "200%",
-        width: "200%",
-        marginRight: "0px",
-        marginLeft: "0px"
-      }}
-    />
+    <>
+    
+        <svg
+          ref={ref}
+          style={{
+            height: "200%",
+            width: "200%",
+            marginRight: "0px",
+            marginLeft: "0px"
+          }}
+        />
+    </>
   )
 
 }
