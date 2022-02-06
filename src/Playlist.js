@@ -1,15 +1,13 @@
 
+import { formatDAGNode } from "./DAGView";
 
-const Playlist = ({ tracks }) => {
-
-  return (
-    <>
-      {tracks.map((track, i) => <Track key={i} track={track}/>)}
-    </>
-  )
-
+const Playlist = ({ dag }) => {
+  const nodes = dag.nodes.flat();
+  const tracks = nodes
+    .filter(n => n.isClicked)
+    .map(n => formatDAGNode(n));
+  return tracks.map((track, i) => <Track key={i} track={track}/>)
 }
-
 export default Playlist
 
 const Track = ({ track }) => {

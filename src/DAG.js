@@ -1,3 +1,5 @@
+import { cloneDeep } from "lodash";
+
 export default class DAG {
 
   constructor(nodes, links, unions) {
@@ -34,7 +36,9 @@ export default class DAG {
       }
     }
 
-    return new DAG(nodes, links, this.unions);
+    const ret = cloneDeep(new DAG(nodes, links, this.unions));
+    
+    return ret;
 
   }
 
@@ -65,7 +69,9 @@ export default class DAG {
       }
     }
 
-    return new DAG(nodes, links, this.unions);
+    const ret = cloneDeep(new DAG(nodes, links, this.unions));
+    
+    return ret;
 
   }
 

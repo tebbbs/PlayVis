@@ -15,7 +15,7 @@ export const useD3 = (renderFn, dependencies) => {
 
 }
 
-const formatDAGNode = (node) => {
+export const formatDAGNode = (node) => {
   return node.isUnion ? node : {
     name: node.track.name,
     id: node.id + node.stepNum,
@@ -24,6 +24,11 @@ const formatDAGNode = (node) => {
     isUnion: false,
     stepcol: node.stepcol,
     stepNum: node.stepNum,
+
+    isClicked: node.isClicked ?? false,
+    isHighlighted: node.isHighlighted ?? false,
+    highlightCol: node.highlightCol ?? "clear",
+
     attributes: {
       artist: node.track.artists[0].name,
       genre: node.track.fullArtist.genres[0],
@@ -35,10 +40,10 @@ const formatDAGNode = (node) => {
   }
 }
 
-export const DAGView = ({ data, setData, setPlaylist }) => {
+export const DAGView = ({ data, setData }) => {
 
   // Format data for d3-dag
-  // Adds a 'root' node - would this be better in the DAG object itself?
+  // Adds a 'root' node 
 
   const nodelist = [
     ...data.nodes.flat().map(formatDAGNode),
@@ -69,7 +74,7 @@ export const DAGView = ({ data, setData, setPlaylist }) => {
       // TODO: show this to user
       if (!nodelist.length || !linkprops.length) {
         svg.selectAll("*").remove();
-        alert("No graphs found for this configuration! Try changing it to be less restrictive");
+        alert("No maps found for this configuration! Try changing it to be less restrictive");
         return;
       }
 
@@ -181,50 +186,61 @@ export const DAGView = ({ data, setData, setPlaylist }) => {
         var nodeUpdate = g.selectAll("g.node");
 
         // Add click behaviour
-
         nodeUpdate
           .on("click", (event, d) => {
 
             // TODO: check for d.data.isClicked here
-            // TODO: make use of d3 transitions here now that svg isn't being
-            // redrawn for each render
 
-            const { id, trackid, stepNum } = d.data;
-            const idClicked = trackid;
-
-            //  Find other instances of the clicked song
-            let nodeHighlight = d3
-              .selectAll("g.node")
-              .filter(node => node.data.trackid === idClicked);
-
-            // Add rectangle to them
-            nodeHighlight
-              .append("rect")
-              .attr("x", _ => -27)
-              .attr("y", _ => -27)
-              .attr("height", 54)
-              .attr("width", 54)
-              .attr("fill", "transparent")
-              .attr("stroke", d.data.stepcol);
-
-            // Reduce opacity of other instances
-            nodeHighlight
-              .filter(node => node.data.id !== id)
-              .select("rect")
-              .attr("fill", "#cccccc80")
-
-            // Add song to playlist
-            setPlaylist(prev => {
-              prev.splice(stepNum, 1, d.data);
-              // return copy to trigger re-redner
-              return [...prev];
-            });
+            const { trackid, stepNum, stepcol } = d.data;
 
             // Remove nodes and links without a route through this node
-            const newDag = data.chooseSong(trackid, stepNum);
+            let newDag = data.chooseSong(trackid, stepNum);
+            
+            // REMOVE WHEN DONE
+            // newDag = data;
+
+            // Set 'isClicked' and 'isHighlighted' for nodes in the new dag
+            for (let i = 0; i < newDag.nodes.length; i++) {
+
+              for (let j = 0; j < newDag.nodes[i].length; j++) {
+                if (i === stepNum && newDag.nodes[i][j].id === trackid) {
+                  newDag.nodes[i][j].isClicked = true;
+                }
+                if (newDag.nodes[i][j].id === trackid) {
+                  newDag.nodes[i][j].isHighlighted = true;
+                  newDag.nodes[i][j].highlightCol = stepcol;
+                }
+              }
+            }
             setData(newDag);
 
           });
+
+        // HACK: remove all old rectangles 
+        // In future, have rectangles on all nodes, and hide/show
+        // based on isClicked/isHighlighted
+        svg.selectAll("rect").remove();
+
+        // Highlight any clicked/highlighted nodes
+        let nodeHighlight = d3
+          .selectAll("g.node")
+          .filter(d => d.data.isHighlighted || d.data.isClicked);
+
+        // Add rectangle to them
+        nodeHighlight
+          .append("rect")
+          .attr("x", _ => -27)
+          .attr("y", _ => -27)
+          .attr("height", 54)
+          .attr("width", 54)
+          .attr("fill", "transparent")
+          .attr("stroke", d => d.data.highlightCol);
+
+        // Reduce opacity of other instances
+        nodeHighlight
+          .filter(node => !node.data.isClicked)
+          .select("rect")
+          .attr("fill", "#cccccc80")
 
         // Transition to the proper position for the node
         nodeUpdate
@@ -259,10 +275,6 @@ export const DAGView = ({ data, setData, setPlaylist }) => {
           .attr("d", d => {
             const o = { x: source.x0, y: source.y0 };
             return diagonal(o, o);
-          })
-          .style("stroke", d => {
-            const lprops = linkprops.find(l => d.data[0] === l.source && d.data[1] === l.target)
-            return lprops.colour
           });
 
         // UPDATE
@@ -273,6 +285,13 @@ export const DAGView = ({ data, setData, setPlaylist }) => {
           .transition()
           .duration(duration)
           .attr("d", d => diagonal(d.source, d.target));
+
+        // Colour links
+        linkUpdate
+          .style("stroke", d => {
+            const lprops = linkprops.find(l => d.data[0] === l.source && d.data[1] === l.target)
+            return lprops.colour
+          });
 
         // Remove any exiting links
         link
@@ -315,21 +334,21 @@ export const DAGView = ({ data, setData, setPlaylist }) => {
         }
       }
 
-    }, [data.reload]
+    }, [JSON.parse(JSON.stringify(data))]
   )
 
   return (
     <>
-    
-        <svg
-          ref={ref}
-          style={{
-            height: "200%",
-            width: "200%",
-            marginRight: "0px",
-            marginLeft: "0px"
-          }}
-        />
+
+      <svg
+        ref={ref}
+        style={{
+          height: "200%",
+          width: "200%",
+          marginRight: "0px",
+          marginLeft: "0px"
+        }}
+      />
     </>
   )
 

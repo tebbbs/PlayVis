@@ -1,13 +1,37 @@
+import { useEffect, useState } from 'react';
 import { SpotifyAuth, Scopes } from 'react-spotify-auth';
 import SpotifyWebApi from 'spotify-web-api-js';
 import 'react-spotify-auth/dist/index.css'
 
-export const getFeatures = async (songs, token) => {
-  const spotifyApi = new SpotifyWebApi();
-  spotifyApi.setAccessToken(token);
+export const useSpotify = (token) => {
+  
+  const [songs, setSongs] = useState();
+  useEffect(() => {
+    if (!token) return;
 
-  const limit = 20;
+    const limit = 50; // max tracks per api call for Spotify
+    const api = new SpotifyWebApi();
+    api.setAccessToken(token);
 
+    (async () => {
+      const tracks = await getAllUserTracks(api, limit);
+      const features = await getFeatures(tracks, api, limit);
+      const songs = tracks.map((track, i) =>
+      ({
+        id: track.track.id,
+        track: track.track,
+        bpm: features[i].tempo,
+        acous: features[i].acousticness,
+        dance: features[i].danceability
+      }));
+      setSongs(songs);
+    })();
+  }, [token]);
+
+  return songs;
+}
+
+export const getFeatures = async (songs, spotifyApi, limit) => {
   let trackIds = []
   for (let i = 0; i < songs.length; i += limit)
         trackIds.push(songs
@@ -22,20 +46,12 @@ export const getFeatures = async (songs, token) => {
   }, Promise.resolve([]));
 
   return features;
-
 }
 
-export const getAllUserTracks = async (token) => {
-  const spotifyApi = new SpotifyWebApi();
-  spotifyApi.setAccessToken(token);
-
-  // get all tracks in 50 track chunks (limited by spotify API)
-
-  const limit = 50;
-
+export const getAllUserTracks = async (spotifyApi, limit) => {
   const { total } = await spotifyApi.getMySavedTracks();
-
   let offsets = []
+  // i < 500 to prevent rate limiting
   for (let i = 0; i < total && i < 500; i += limit)
     offsets.push(i);
 
@@ -69,14 +85,7 @@ export const getAllUserTracks = async (token) => {
 
 }
 
-export const getAllUserTracksParallel = async (token) => {
-  const spotifyApi = new SpotifyWebApi();
-  spotifyApi.setAccessToken(token);
-
-  const limit = 50;
-
-  // get all tracks in 50 track chunks (limited by spotify API)
-
+export const getAllUserTracksParallel = async (spotifyApi, limit) => {
   const { total } = await spotifyApi.getMySavedTracks();
 
   let pTracks = [];
@@ -108,7 +117,6 @@ export const getAllUserTracksParallel = async (token) => {
 
 
 }
-
 
 
 export const SpotifyLogin = ({ setToken }) => {

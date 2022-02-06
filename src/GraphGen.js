@@ -75,7 +75,6 @@ const DAGexpandAbs = (songs, frontier, step, stepNum) => {
 
   return { frontier: nFront, links, union };
 
-
 }
 
 const findRel = (songs, curr, constraints) => {
