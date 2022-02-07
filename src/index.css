@@ -122,3 +122,14 @@ button {
 .howto {
   padding: 0 20% 5%
 }
+
+/* playlist track */
+
+.playlisttrack {
+  background-color: #EEEEEE;
+  padding: 1px;
+  margin: 5px;
+  border-radius: 5px;
+  gap: 10px;
+  display: flex;
+}

@@ -2,7 +2,7 @@ import React from 'react';
 import * as d3 from 'd3';
 import * as d3Dag from 'd3-dag';
 
-export const useD3 = (renderFn, dependencies) => {
+const useD3 = (renderFn, dependencies) => {
   const ref = React.useRef();
 
   React.useEffect(() => {
@@ -14,53 +14,29 @@ export const useD3 = (renderFn, dependencies) => {
   return ref;
 
 }
-
-export const formatDAGNode = (node) => {
-  return node.isUnion ? node : {
-    name: node.track.name,
-    id: node.id + node.stepNum,
-    trackid: node.track.id,
-    imgurl: node.track.album.images[1].url,
-    isUnion: false,
-    stepcol: node.stepcol,
-    stepNum: node.stepNum,
-
-    isClicked: node.isClicked ?? false,
-    isHighlighted: node.isHighlighted ?? false,
-    highlightCol: node.highlightCol ?? "clear",
-
-    attributes: {
-      artist: node.track.artists[0].name,
-      genre: node.track.fullArtist.genres[0],
-      bpm: node.bpm,
-      acous: node.acous,
-      dance: node.dance,
-      strrep: `bpm: ${node.bpm} acous: ${node.acous} dance: ${node.dance}`,
-    }
-  }
-}
-
 export const DAGView = ({ data, setData }) => {
 
   // Format data for d3-dag
   // Adds a 'root' node 
 
   const nodelist = [
-    ...data.nodes.flat().map(formatDAGNode),
+    ...data.nodes.flat(),
     ...data.unions,
     { id: "root", isUnion: true }
   ];
   const linkprops = [
     ...data.links.flat(),
-    ...data.nodes[0].map(n =>
-    ({
-      source: "root",
-      target: n.id + 0,
-      stepid: 0,
-      colour: n.stepcol,
-      isLHalf: false,
-      isRHalf: false,
-    }))
+    ...data.nodes[0].map(n => {
+      return ({
+        source: "root",
+        target: n.id,
+        stepid: 0,
+        colour: n.stepCol,
+        isLHalf: false,
+        isRHalf: true,
+
+      })
+    })
   ];
 
   const linkpairs = linkprops.map(linkObj => [linkObj.source, linkObj.target]);
@@ -78,6 +54,7 @@ export const DAGView = ({ data, setData }) => {
         return;
       }
 
+      // #region layout
       // helper variables
       const duration = 750;
       const x_sep = 120;
@@ -107,7 +84,9 @@ export const DAGView = ({ data, setData }) => {
         // might have to remove "large" at some point
         .decross(d3Dag.decrossOpt().large("large"))
         .coord(d3Dag.coordQuad())
-        .nodeSize(() => [y_sep, x_sep]);
+        .nodeSize(d => [y_sep, 
+          d ? d.data.isUnion ? x_sep / 8 : x_sep : x_sep]);
+
 
       // make dag from edge list
       let dag = d3Dag.dagConnect()(linkpairs);
@@ -130,6 +109,7 @@ export const DAGView = ({ data, setData }) => {
       root.x0 = 0;
       root.y0 = 0;
 
+      // #endregion layout
 
       // draw dag
       update(root);
@@ -140,7 +120,7 @@ export const DAGView = ({ data, setData }) => {
         const nodes = dag.descendants();
         const links = dag.links();
 
-        // ****************** Nodes section ***************************
+        // #region nodes ****** Nodes section ***************************
 
         // Update the nodes...
         var node = g
@@ -177,6 +157,15 @@ export const DAGView = ({ data, setData }) => {
           .attr("text-anchor", "start")
           .text((d) => d.data.name);
 
+        // Add rectangles for highlighting
+        nodeEnter
+          .append("rect")
+          .attr("x", _ => -27)
+          .attr("y", _ => -27)
+          .attr("height", 54)
+          .attr("width", 54)
+          .attr("fill", "transparent")
+
         // UPDATE
 
         // not sure why merge doesn't work but this is ok for now
@@ -189,52 +178,27 @@ export const DAGView = ({ data, setData }) => {
         nodeUpdate
           .on("click", (event, d) => {
 
-            // TODO: check for d.data.isClicked here
-
-            const { trackid, stepNum, stepcol } = d.data;
-
             // Remove nodes and links without a route through this node
-            let newDag = data.chooseSong(trackid, stepNum);
-            
-            // REMOVE WHEN DONE
-            // newDag = data;
-
-            // Set 'isClicked' and 'isHighlighted' for nodes in the new dag
-            for (let i = 0; i < newDag.nodes.length; i++) {
-
-              for (let j = 0; j < newDag.nodes[i].length; j++) {
-                if (i === stepNum && newDag.nodes[i][j].id === trackid) {
-                  newDag.nodes[i][j].isClicked = true;
-                }
-                if (newDag.nodes[i][j].id === trackid) {
-                  newDag.nodes[i][j].isHighlighted = true;
-                  newDag.nodes[i][j].highlightCol = stepcol;
-                }
-              }
-            }
+            let newDag = data.chooseSong(d.data);
             setData(newDag);
 
           });
 
-        // HACK: remove all old rectangles 
-        // In future, have rectangles on all nodes, and hide/show
-        // based on isClicked/isHighlighted
-        svg.selectAll("rect").remove();
+        // Initially, hide rectangle highlights from previous renders
+        nodeUpdate
+          .select("rect")
+          .attr("visibility", "hidden");
 
         // Highlight any clicked/highlighted nodes
         let nodeHighlight = d3
           .selectAll("g.node")
           .filter(d => d.data.isHighlighted || d.data.isClicked);
 
-        // Add rectangle to them
+        // Show rectangle
         nodeHighlight
-          .append("rect")
-          .attr("x", _ => -27)
-          .attr("y", _ => -27)
-          .attr("height", 54)
-          .attr("width", 54)
-          .attr("fill", "transparent")
-          .attr("stroke", d => d.data.highlightCol);
+          .select("rect")
+          .attr("stroke", d => d.data.highlightCol)
+          .attr("visibility", "visible");
 
         // Reduce opacity of other instances
         nodeHighlight
@@ -261,6 +225,8 @@ export const DAGView = ({ data, setData }) => {
 
         // On exit reduce the opacity of text labels
         nodeExit.select("text").style("fill-opacity", 1e-6);
+
+        // #endregion nodes
 
         // ****************** links section ***************************
 
@@ -339,7 +305,6 @@ export const DAGView = ({ data, setData }) => {
 
   return (
     <>
-
       <svg
         ref={ref}
         style={{

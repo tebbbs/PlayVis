@@ -15,13 +15,13 @@ const tree2List = (node) => {
 
 }
 
-const DAGexpandRel = (songs, frontier, step, stepNum) => {
+const expandRel = (songs, frontier, step, stepNum) => {
   let links = [];
   const nextFront = frontier.flatMap(curr => {
     const next = findRel(songs, curr, step.state)
       .filter(song =>
-        // song.id !== curr.id
-        song.track.fullArtist.name !== curr.track.fullArtist.name && song.track.name !== curr.track.name
+        song.track.fullArtist.name !== curr.track.fullArtist.name
+        && song.track.name !== curr.track.name
       );
     links.push(...next.map(nxt =>
     ({
@@ -36,12 +36,12 @@ const DAGexpandRel = (songs, frontier, step, stepNum) => {
     return next;
   });
   const nFront = Array.from(new Set(nextFront))
-    .map(node => ({ ...node, stepNum, stepcol: step.colour }));
+    .map(node => ({ ...node, stepNum, stepCol: step.colour }));
   return { frontier: nFront, links };
 
 }
 
-const DAGexpandAbs = (songs, frontier, step, stepNum) => {
+const expandAbs = (songs, frontier, step, stepNum) => {
   const nextFront = findAbs(songs, step.state);
 
   if (!nextFront.length) {
@@ -69,7 +69,7 @@ const DAGexpandAbs = (songs, frontier, step, stepNum) => {
   }));
 
   const nFront = Array.from(new Set(nextFront))
-    .map(node => ({ ...node, stepNum, stepcol: step.colour }));
+    .map(node => ({ ...node, stepNum, stepCol: step.colour }));
 
   const links = [...l1s, ...l2s]
 
@@ -99,11 +99,11 @@ const findAbs = (songs, constraints) => {
   )
 }
 
-export const genDAG2 = (stepTree, songs) => {
+export const genDAG = (stepTree, songs) => {
   const steps = tree2List(stepTree);
 
   let frontier = findAbs(songs, steps[0].state)
-    .map(song => ({ ...song, stepNum: 0, stepcol: steps[0].colour }));
+    .map(song => ({ ...song, stepNum: 0, stepCol: steps[0].colour }));
 
   let links = [];
   let nodes = [frontier];
@@ -111,8 +111,8 @@ export const genDAG2 = (stepTree, songs) => {
 
   for (let i = 1; i < steps.length; i++) {
     const result = steps[i].isRel ?
-      DAGexpandRel(songs, frontier, steps[i], i)
-      : DAGexpandAbs(songs, frontier, steps[i], i);
+      expandRel(songs, frontier, steps[i], i)
+      : expandAbs(songs, frontier, steps[i], i);
 
     frontier = result.frontier;
 
@@ -145,5 +145,32 @@ export const genDAG2 = (stepTree, songs) => {
     nodes.push(result.frontier);
   }
 
+  // Add default properties for view
+  nodes = nodes.map(narr => narr.map(node => (
+    {
+      name: node.track.name,
+      id: node.id + node.stepNum,
+      trackid: node.track.id,
+      imgurl: node.track.album.images[1].url,
+
+      stepNum: node.stepNum,
+      stepCol: node.stepCol,
+
+      isUnion: false,
+      isClicked: false,
+      isHighlighted: false,
+      highlightCol: "clear",
+
+      attributes: {
+        artist: node.track.artists[0].name,
+        genre: node.track.fullArtist.genres[0],
+        bpm: node.bpm,
+        acous: node.acous,
+        dance: node.dance,
+        strrep: `bpm: ${node.bpm} acous: ${node.acous} dance: ${node.dance}`
+      }
+    })))
+
   return new DAG(nodes, links, unions);
+
 }

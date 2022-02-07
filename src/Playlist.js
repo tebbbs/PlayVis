@@ -1,29 +1,26 @@
 
-import { formatDAGNode } from "./DAGView";
-
 const Playlist = ({ dag }) => {
-  const nodes = dag.nodes.flat();
-  const tracks = nodes
+  return dag.nodes
+    .flat()
     .filter(n => n.isClicked)
-    .map(n => formatDAGNode(n));
-  return tracks.map((track, i) => <Track key={i} track={track}/>)
+    .map((track, i) => <Track key={i} track={track} />);
 }
+
 export default Playlist
 
 const Track = ({ track }) => {
 
-  if (!track) return <div> </div>
-
-  const { attributes, imgurl, name } = track;
-  const artist = attributes.artist;
+  const { attributes, imgurl, name, stepCol } = track;
+  const { bpm, acous, dance, artist } = attributes;
 
   return (
-    <div style={{
-      backgroundColor: "white",
-      margin: "2px"
-    }}>
-      <img src={imgurl} height={50} width={50} alt="" />
+    <div className="playlisttrack" style={{ backgroundColor: stepCol}}>
+      <img src={imgurl} height={50} width={50} alt="" style={{ borderRadius: "5px" }} />
+      <div>
       {name} - {artist}
+      <br></br>
+      <font size="1">{`BPM: ${bpm.toFixed(0)} - Acousticness: ${(acous * 100).toFixed(3)} - Danceability: ${(dance * 100).toFixed(0)}`}</font>
+      </div>
     </div>
   )
 

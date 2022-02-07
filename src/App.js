@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { SpotifyLogin, useSpotify } from './Spotify';
-import { genDAG2 } from './GraphGen';
+import { genDAG } from './DAGGen';
 import { Groups, defaultTree } from './Group';
 import { DAGView } from './DAGView'
 import './index.css';
@@ -34,7 +34,7 @@ export default function App() {
                   <h3>Specification</h3>
                   {songs
                     ? <button type="button" onClick={() => {
-                      const dd = genDAG2(tree, songs);
+                      const dd = genDAG(tree, songs);
                       reset(dd);
                     }}>Generate Map</button>
                     : <button>Loading...</button>
