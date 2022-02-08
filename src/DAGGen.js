@@ -1,4 +1,29 @@
+import { cloneDeep } from 'lodash'
 import DAG from './DAG'
+
+const formatNodes = (nodes) => nodes.map(narr => narr.map(node => (
+  {
+    name: node.track.name,
+    id: node.id + node.stepNum,
+    trackid: node.track.id,
+    imgurl: node.track.album.images[1].url,
+
+    stepNum: node.stepNum,
+    stepCol: node.stepCol,
+
+    isUnion: false,
+    isClicked: false,
+    isHighlighted: false,
+    highlightCol: "clear",
+
+    attributes: {
+      artist: node.track.artists[0].name,
+      genre: node.track.fullArtist.genres[0],
+      bpm: node.bpm,
+      acous: node.acous,
+      dance: node.dance,
+    }
+  })))
 
 // probably need to change this to something more automata 
 // like to handle 'max'/'inf' loop options
@@ -99,78 +124,68 @@ const findAbs = (songs, constraints) => {
   )
 }
 
+/**
+ * Applies step to find the next layer of nodes for the current dag
+ * Removes nodes that don't have any paths through them to the last layer
+ * Returns copy of DAG
+ * @param {*} songs 
+ * @param {*} step 
+ * @param {*} dag 
+ */
+const expandStep = (songs, step, dag) => {
+  let { nodes, links, unions } = cloneDeep(dag);
+  const stepNum = nodes.length;
+  const frontier = nodes[stepNum - 1];
+  const result = step.isRel ?
+    expandRel(songs, frontier, step, stepNum)
+    : expandAbs(songs, frontier, step, stepNum);
+
+  links.push(result.links);
+
+  if (!step.isRel) {
+    unions.push(result.union);
+  }
+
+  else {
+    for (let j = stepNum - 1; j >= 0; j--) {
+      // find nodes to remove, i.e. nodes with no links coming from them
+      const srcs = links[j].map(l => l.source);
+      const idsToRemove = nodes[j]
+        .map(node => node.id + j)
+        .filter(id => !srcs.includes(id));
+      // remove links to nodes that are to be removed
+      if (j > 0)
+        links[j - 1] = links[j - 1].filter(l => !idsToRemove.includes(l.target));
+      // remove nodes
+      nodes[j] = nodes[j].filter(n => !idsToRemove.includes(n.id + j));
+
+      // remove all links to a row if all its nodes have been removed
+      // this happens if a failed rel step follows an abs step
+      if (j > 0 && nodes[j].length === 0)
+        links[j - 1] = [];
+    }
+  }
+  nodes.push(result.frontier);
+
+  return { nodes, links, unions }
+
+}
+
 export const genDAG = (stepTree, songs) => {
   const steps = tree2List(stepTree);
 
-  let frontier = findAbs(songs, steps[0].state)
-    .map(song => ({ ...song, stepNum: 0, stepCol: steps[0].colour }));
+  const initialNodes = findAbs(songs, steps[0].state)
+      .map(song => ({ ...song, stepNum: 0, stepCol: steps[0].colour }));
 
-  let links = [];
-  let nodes = [frontier];
-  let unions = [];
+  let dag = { nodes: [initialNodes], links: [], unions: [] }
 
   for (let i = 1; i < steps.length; i++) {
-    const result = steps[i].isRel ?
-      expandRel(songs, frontier, steps[i], i)
-      : expandAbs(songs, frontier, steps[i], i);
-
-    frontier = result.frontier;
-
-    links.push(result.links);
-
-    if (!steps[i].isRel) {
-      unions.push(result.union);
-    }
-
-    else {
-      for (let j = i - 1; j >= 0; j--) {
-        // find nodes to remove, i.e. nodes with no links coming from them
-        const srcs = links[j].map(l => l.source);
-        const idsToRemove = nodes[j]
-          .map(node => node.id + j)
-          .filter(id => !srcs.includes(id));
-        // remove links to nodes that are to be removed
-        if (j > 0)
-          links[j - 1] = links[j - 1].filter(l => !idsToRemove.includes(l.target));
-        // remove nodes
-        nodes[j] = nodes[j].filter(n => !idsToRemove.includes(n.id + j));
-
-        // remove all links to a row if all its nodes have been removed
-        // this happens if a failed rel step follows an abs step
-        if (j > 0 && nodes[j].length === 0)
-          links[j - 1] = [];
-      }
-    }
-
-    nodes.push(result.frontier);
+    const step = steps[i];
+    dag = expandStep(songs, step, dag);
   }
-
   // Add default properties for view
-  nodes = nodes.map(narr => narr.map(node => (
-    {
-      name: node.track.name,
-      id: node.id + node.stepNum,
-      trackid: node.track.id,
-      imgurl: node.track.album.images[1].url,
-
-      stepNum: node.stepNum,
-      stepCol: node.stepCol,
-
-      isUnion: false,
-      isClicked: false,
-      isHighlighted: false,
-      highlightCol: "clear",
-
-      attributes: {
-        artist: node.track.artists[0].name,
-        genre: node.track.fullArtist.genres[0],
-        bpm: node.bpm,
-        acous: node.acous,
-        dance: node.dance,
-        strrep: `bpm: ${node.bpm} acous: ${node.acous} dance: ${node.dance}`
-      }
-    })))
-
-  return new DAG(nodes, links, unions);
+  dag.nodes = formatNodes(dag.nodes);
+  
+  return new DAG(dag.nodes, dag.links, dag.unions);
 
 }

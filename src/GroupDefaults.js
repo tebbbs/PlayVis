@@ -12,19 +12,27 @@ const absStepState = {
   dance: { checked: true, min: 65, max: 100 }
 };
 
-export const ranges =
-{
-  rel: {
-    bpm: [-50, 50],
-    acous: [-50, 50],
-    dance: [-50, 50]
-  },
-  abs: {
-    bpm: [0, 200],
-    acous: [0, 100],
-    dance: [0, 100]
+export const ranges = (songs) => {
+
+  const bpms = songs.map(s => s.bpm);
+  const acouss = songs.map(s => s.acous);
+  const dances = songs.map(s => s.dance);
+
+  const minMax = (feats) => [Math.min(...feats), Math.max(...feats)];
+
+  return {
+      rel: {
+        bpm: [-50, 50],
+        acous: [-50, 50],
+        dance: [-50, 50]
+      },
+      abs: {
+        bpm: minMax(bpms),
+        acous: minMax(acouss).map(x => x * 100),
+        dance: minMax(dances).map(x => x * 100)
+      }
   }
-}
+};
 
 export const relStep = (id) => ({
   isStep: true,
@@ -42,7 +50,7 @@ export const absStep = (id) => ({
   colour: colours[+id % colours.length],
   loops: 1,
   state: absStepState
-})
+});
 
 export const group = (id) => ({
   isStep: false,

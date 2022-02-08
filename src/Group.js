@@ -1,17 +1,21 @@
-import { useState } from "react"
+import { useState, createContext, useContext } from "react"
 import * as defaults from "./GroupDefaults"
 import _uniqueId from 'lodash/uniqueId'
 import { Slider } from "@mui/material"
+import { useEffect } from "react";
 
 export const defaultTree = {
   ...defaults.group(_uniqueId()),
   children: [
     defaults.absStep(_uniqueId()),
     defaults.relStep(_uniqueId()),
-    defaults.relStep(_uniqueId())]
+    defaults.relStep(_uniqueId())
+  ]
 };
 
-export const Groups = ({ tree, setTree }) => {
+const RangeContext = createContext();
+
+export const Groups = ({ tree, setTree, songs }) => {
 
   const tUpdate = (node, newnode) => {
     if (node.id === newnode.id) return newnode;
@@ -21,7 +25,9 @@ export const Groups = ({ tree, setTree }) => {
   }
 
   return (
-    <Group node={tree} setNode={(newNode) => setTree(prev => tUpdate(prev, newNode))} onDel={() => setTree(defaultTree)} />
+    <RangeContext.Provider value={defaults.ranges(songs)} >
+      <Group node={tree} setNode={(newNode) => setTree(prev => tUpdate(prev, newNode))} onDel={() => setTree(defaultTree)} />
+    </RangeContext.Provider>
   )
 }
 
@@ -91,7 +97,9 @@ const Step = ({ node, setNode, onDel }) => {
 
   const updateState = (val) => setNode({ ...node, state: { ...node.state, ...val } });
 
-  const ranges = defaults.ranges[(node.isRel ? "rel" : "abs")];
+  // const ranges = defaults.ranges[(node.isRel ? "rel" : "abs")];
+
+  const ranges = useContext(RangeContext)[node.isRel ? "rel" : "abs"];
 
   return (
     <div className="step" style={{ backgroundColor: node.colour }}>
@@ -125,6 +133,11 @@ const DelButton = ({ onDel }) => {
 const StepElem = ({ feature, range, state, setState }) => {
   const [rmin, rmax] = range
 
+  const [slide, setSlide] = useState({ min: state.min, max: state.max });
+
+  useEffect(() => setSlide(state), [state]);
+
+
   return (
     <div className="stepelem">
       <div style={{ textAlign: "center" }}>
@@ -135,12 +148,16 @@ const StepElem = ({ feature, range, state, setState }) => {
       </div>
       <div>
         <Slider
-          value={[state.min, state.max]}
+          value={[slide.min, slide.max]}
           onChange={e => {
             const [min, max] = e.target.value;
-            setState({ ...state, min: min, max: max })
+            setSlide({ min, max });
+          }}
+          onChangeCommitted={e => {
+            setState(({...state, ...slide }));
           }}
           valueLabelDisplay="auto"
+          valueLabelFormat={x => x.toFixed(0)}
           min={rmin}
           max={rmax}
           size="small"

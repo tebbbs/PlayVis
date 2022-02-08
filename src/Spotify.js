@@ -4,9 +4,18 @@ import SpotifyWebApi from 'spotify-web-api-js';
 import 'react-spotify-auth/dist/index.css'
 
 export const useSpotify = (token) => {
-  
+
   const [songs, setSongs] = useState();
+
   useEffect(() => {
+
+    if (process.env.NODE_ENV === "development") {
+      fetch("http://localhost:3001/songs")
+        .then(res => res.json())
+        .then(([songs]) => setSongs(songs));
+      return;
+    }
+
     if (!token) return;
 
     const limit = 50; // max tracks per api call for Spotify
@@ -25,6 +34,15 @@ export const useSpotify = (token) => {
         dance: features[i].danceability
       }));
       setSongs(songs);
+
+    // -----
+    // fetch("http://localhost:3001/songs", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify(songs)
+    //   })
+    // -----
+
     })();
   }, [token]);
 
@@ -81,8 +99,6 @@ export const getAllUserTracks = async (spotifyApi, limit) => {
     added_at: t.added_at,
     track: { ...t.track, fullArtist: artists[i] }
   }));
-
-
 }
 
 export const getAllUserTracksParallel = async (spotifyApi, limit) => {

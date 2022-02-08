@@ -30,7 +30,7 @@ export const DAGView = ({ data, setData }) => {
       return ({
         source: "root",
         target: n.id,
-        stepid: 0,
+        stepid: -1,
         colour: n.stepCol,
         isLHalf: false,
         isRHalf: true,
@@ -43,16 +43,6 @@ export const DAGView = ({ data, setData }) => {
 
   const ref = useD3(
     (svg) => {
-
-      // TODO: Remove all rectangles when 'Generate graph' is clicked, but not when
-      // a song is clicked
-
-      // TODO: show this to user
-      if (!nodelist.length || !linkprops.length) {
-        svg.selectAll("*").remove();
-        alert("No maps found for this configuration! Try changing it to be less restrictive");
-        return;
-      }
 
       // #region layout
       // helper variables
@@ -120,7 +110,8 @@ export const DAGView = ({ data, setData }) => {
         const nodes = dag.descendants();
         const links = dag.links();
 
-        // #region nodes ****** Nodes section ***************************
+        // #region nodes 
+        // ****** Nodes section ***************************
 
         // Update the nodes...
         var node = g
@@ -155,7 +146,7 @@ export const DAGView = ({ data, setData }) => {
           .attr("dy", 40)
           .attr("dx", -25)
           .attr("text-anchor", "start")
-          .text((d) => d.data.name);
+          .text(d => d.data.name);
 
         // Add rectangles for highlighting
         nodeEnter
@@ -228,6 +219,7 @@ export const DAGView = ({ data, setData }) => {
 
         // #endregion nodes
 
+        // #region links
         // ****************** links section ***************************
 
         // Update the links...
@@ -269,6 +261,8 @@ export const DAGView = ({ data, setData }) => {
             return diagonal(o, o);
           })
           .remove();
+
+        // #endregion links
 
         // expanding a big subgraph moves the entire dag out of the window
         // to prevent this, cancel any transformations in y-direction

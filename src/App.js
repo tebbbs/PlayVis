@@ -16,6 +16,7 @@ export default function App() {
   const [token, setToken] = useState(Cookies.get("spotifyAuthToken"));
   const songs = useSpotify(token);
   const [tree, setTree] = useState(defaultTree);
+  const [rtGen, setRtGen] = useState(true);
   const [dagData, setDagData, undo, redo, reset] = useHistory();
 
   return (
@@ -33,10 +34,14 @@ export default function App() {
                 <div className="gengraphdiv">
                   <h3>Specification</h3>
                   {songs
-                    ? <button type="button" onClick={() => {
-                      const dd = genDAG(tree, songs);
-                      reset(dd);
-                    }}>Generate Map</button>
+                    ? <div>
+                      <font size="1">Update in real-time</font>
+                      <input type="checkbox" onClick={() => setRtGen(prev => !prev)} defaultChecked={rtGen} />
+                      <button type="button" onClick={() => {
+                        const dd = genDAG(tree, songs);
+                        reset(dd);
+                      }}>Generate Map</button>
+                    </div>
                     : <button>Loading...</button>
                   }
                 </div>
@@ -54,13 +59,31 @@ export default function App() {
                   <h3>Playlist</h3>
                 </div>
                 <div className="recipediv">
-                  <Groups tree={tree} setTree={setTree} />
+                  {songs && <Groups tree={tree} setTree={
+                    rtGen ? 
+                    (f) => {
+                      setTree(prev => {
+                        const newTree = f(prev);
+                        const dd = genDAG(newTree, songs);
+                        setDagData(dd);
+                        return newTree;
+                      });
+                    }
+                    : setTree
+                  } songs={songs} />}
                 </div>
 
                 <div className="dagdiv">
                   <button type="button" onClick={undo}>Undo</button>
                   <button type="button" onClick={redo}>Redo</button>
-                  {dagData && <DAGView data={dagData} setData={setDagData} />}
+                  {dagData &&
+                    (dagData.nodes.flat().length ?
+                      <DAGView data={dagData} setData={setDagData} />
+                      : <span>
+                        <br></br>
+                        No maps found for this configuration! Try changing it to be less restrictive
+                      </span>
+                    )}
                 </div>
 
                 <div className="playlistdiv">
