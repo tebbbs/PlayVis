@@ -140,6 +140,9 @@ const expandStep = (songs, step, dag) => {
     expandRel(songs, frontier, step, stepNum)
     : expandAbs(songs, frontier, step, stepNum);
 
+  if (result.frontier.length === 0)
+    return { nodes: [], links: [], unions: [] }
+
   links.push(result.links);
 
   if (!step.isRel) {
@@ -175,7 +178,7 @@ export const genDAG = (stepTree, songs) => {
   const steps = tree2List(stepTree);
 
   const initialNodes = findAbs(songs, steps[0].state)
-      .map(song => ({ ...song, stepNum: 0, stepCol: steps[0].colour }));
+    .map(song => ({ ...song, stepNum: 0, stepCol: steps[0].colour }));
 
   let dag = { nodes: [initialNodes], links: [], unions: [] }
 
@@ -185,7 +188,86 @@ export const genDAG = (stepTree, songs) => {
   }
   // Add default properties for view
   dag.nodes = formatNodes(dag.nodes);
-  
+
   return new DAG(dag.nodes, dag.links, dag.unions);
 
+}
+
+const isEmpty = ({ nodes, links, unions }) =>
+  nodes.flat().length === 0
+  && links.flat().length === 0
+  && unions.length === 0
+
+export const genDAG3 = (node, songs) => {
+  // Find first step
+  let step1 = node;
+  while (!step1.isStep)
+    step1 = node.children[0];
+
+  // Set up initial DAG
+  const initialNodes = findAbs(songs, step1.state)
+    .map(song => ({ ...song, stepNum: 0, stepCol: step1.colour }));
+
+  let initDag = { nodes: [initialNodes], links: [], unions: [] };
+
+  const tree = cloneDeep(node);
+  tree.id = "root";
+  tree.children = tree.children.slice(1);
+
+  const { nodes, links, unions } = treeTraverse(initDag, tree, songs);
+
+  return new DAG(formatNodes(nodes), links, unions);
+
+}
+
+export const treeTraverse = (dag, node, songs) => {
+
+  // TODO: Refactor this
+
+  let newDag = dag;
+  // Case: group
+  if (!node.isStep) {
+    if (node.isMax) {
+      let nextDag = newDag;
+      let hasResult = true;
+      while (hasResult) {
+        // Loop over children, see if they can be applied
+        for (let i = 0; i < node.children.length; i++) {
+          nextDag = treeTraverse(nextDag, node.children[i], songs)
+          if (isEmpty(nextDag)) {
+            hasResult = false;
+            break;
+          }
+        }
+        // If all children can be expanded, update newDag
+        if (hasResult) newDag = nextDag;
+      }
+    }
+    // Just a numerical loop
+    else 
+      for (let i = 0; i < node.loops; i++) 
+        for (let j = 0; j < node.children.length; j++) 
+          newDag = treeTraverse(newDag, node.children[j], songs);
+
+    return newDag;
+  }
+  // Case: step
+  else {
+    const step = node;
+
+    if (step.isRel && step.isMax) {
+      let nextDag = expandStep(songs, step, newDag);
+      while (!isEmpty(nextDag)) {
+        newDag = nextDag;
+        nextDag = expandStep(songs, step, nextDag);
+      }
+    }
+
+    else {
+      for (let i = 0; i < step.loops; i++) {
+        newDag = expandStep(songs, step, newDag);
+      }
+    }
+    return newDag;
+  }
 }

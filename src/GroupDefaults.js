@@ -40,6 +40,7 @@ export const relStep = (id) => ({
   id: "step-" + id,
   colour: colours[+id % colours.length],
   loops: 1,
+  isMax: false,
   state: relStepState
 });
 

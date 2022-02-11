@@ -1,10 +1,10 @@
 import { useReducer } from 'react';
 
-export const useHistory = () => {
+export const useHistory = (initialState) => {
 
   const [state, dispatch] = useReducer(
     (state, updateFn) => ({ ...state, ...updateFn(state) }),
-    { history: [], index: 0 }
+    { history: [initialState], index: 0 }
   );
 
   const setState = action => {

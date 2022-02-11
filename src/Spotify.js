@@ -1,28 +1,18 @@
-import { useEffect, useState } from 'react';
 import { SpotifyAuth, Scopes } from 'react-spotify-auth';
 import SpotifyWebApi from 'spotify-web-api-js';
 import 'react-spotify-auth/dist/index.css'
 
-export const useSpotify = (token) => {
-
-  const [songs, setSongs] = useState();
-
-  useEffect(() => {
-
+export const fetchSongs = async (token) => {
     if (process.env.NODE_ENV === "development") {
-      fetch("http://localhost:3001/songs")
+      return fetch("http://localhost:3001/songs")
         .then(res => res.json())
-        .then(([songs]) => setSongs(songs));
-      return;
+        .then(([songs]) => songs);
     }
-
-    if (!token) return;
 
     const limit = 50; // max tracks per api call for Spotify
     const api = new SpotifyWebApi();
     api.setAccessToken(token);
 
-    (async () => {
       const tracks = await getAllUserTracks(api, limit);
       const features = await getFeatures(tracks, api, limit);
       const songs = tracks.map((track, i) =>
@@ -33,8 +23,7 @@ export const useSpotify = (token) => {
         acous: features[i].acousticness,
         dance: features[i].danceability
       }));
-      setSongs(songs);
-
+      return songs;
     // -----
     // fetch("http://localhost:3001/songs", {
     //     method: "POST",
@@ -42,11 +31,6 @@ export const useSpotify = (token) => {
     //     body: JSON.stringify(songs)
     //   })
     // -----
-
-    })();
-  }, [token]);
-
-  return songs;
 }
 
 export const getFeatures = async (songs, spotifyApi, limit) => {

@@ -4,6 +4,17 @@ import _uniqueId from 'lodash/uniqueId'
 import { Slider } from "@mui/material"
 import { useEffect } from "react";
 
+export const defaultTreeMax = {
+  ...defaults.group(_uniqueId()),
+  children: [
+    defaults.absStep(_uniqueId()),
+    { ...defaults.group(_uniqueId()), isMax: true, children: [
+      { ...defaults.relStep(_uniqueId()) },
+      { ...defaults.relStep(_uniqueId()) }
+    ]}
+  ]
+};
+
 export const defaultTree = {
   ...defaults.group(_uniqueId()),
   children: [
@@ -97,14 +108,13 @@ const Step = ({ node, setNode, onDel }) => {
 
   const updateState = (val) => setNode({ ...node, state: { ...node.state, ...val } });
 
-  // const ranges = defaults.ranges[(node.isRel ? "rel" : "abs")];
-
   const ranges = useContext(RangeContext)[node.isRel ? "rel" : "abs"];
+  const format = x => x.toFixed(0) + (node.isRel ? "%" : "")
 
   return (
     <div className="step" style={{ backgroundColor: node.colour }}>
       <div style={{ display: "flex", justifyContent: "space-between", align: "center" }}>
-        ({node.isRel ? "rel" : "abs"} values)
+        {node.isRel ? "Relative" : "Absolute"} step
         <div>
           Loops:
           <input type="number" className="valInput" value={node.loops} min="1" onChange={(e) => setNode({ ...node, loops: +e.target.value })} />
@@ -112,9 +122,9 @@ const Step = ({ node, setNode, onDel }) => {
         <DelButton onDel={onDel} />
       </div>
       <div>
-        <StepElem feature="BPM   " range={ranges.bpm} state={bpm} setState={bpm => updateState({ bpm })} />
-        <StepElem feature="Acous." range={ranges.acous} state={acous} setState={acous => updateState({ acous })} />
-        <StepElem feature="Dance." range={ranges.dance} state={dance} setState={dance => updateState({ dance })} />
+        <StepElem feature="BPM   " format={format} range={ranges.bpm} state={bpm} setState={bpm => updateState({ bpm })} />
+        <StepElem feature="Acous." format={format} range={ranges.acous} state={acous} setState={acous => updateState({ acous })} />
+        <StepElem feature="Dance." format={format} range={ranges.dance} state={dance} setState={dance => updateState({ dance })} />
       </div>
     </div>
   )
@@ -130,18 +140,17 @@ const DelButton = ({ onDel }) => {
   )
 }
 
-const StepElem = ({ feature, range, state, setState }) => {
+const StepElem = ({ feature, format, range, state, setState }) => {
   const [rmin, rmax] = range
 
   const [slide, setSlide] = useState({ min: state.min, max: state.max });
 
   useEffect(() => setSlide(state), [state]);
 
-
   return (
     <div className="stepelem">
       <div style={{ textAlign: "center" }}>
-        <input type="checkbox" defaultChecked={state.checked} onChange={e =>
+        <input type="checkbox" checked={state.checked} onChange={e =>
           setState({ ...state, checked: !state.checked })
         } />
         {feature}
@@ -157,7 +166,7 @@ const StepElem = ({ feature, range, state, setState }) => {
             setState(({...state, ...slide }));
           }}
           valueLabelDisplay="auto"
-          valueLabelFormat={x => x.toFixed(0)}
+          valueLabelFormat={format}
           min={rmin}
           max={rmax}
           size="small"

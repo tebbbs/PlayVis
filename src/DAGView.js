@@ -72,7 +72,8 @@ export const DAGView = ({ data, setData }) => {
         .sugiyama()
         .layering(d3Dag.layeringSimplex())
         // might have to remove "large" at some point
-        .decross(d3Dag.decrossOpt().large("large"))
+        // .decross(d3Dag.decrossOpt().large("large"))
+        .decross(d3Dag.decrossTwoLayer().passes(3))
         .coord(d3Dag.coordQuad())
         .nodeSize(d => [y_sep, 
           d ? d.data.isUnion ? x_sep / 8 : x_sep : x_sep]);
@@ -302,8 +303,8 @@ export const DAGView = ({ data, setData }) => {
       <svg
         ref={ref}
         style={{
-          height: "200%",
-          width: "200%",
+          height: "1000%",
+          width: "1000%",
           marginRight: "0px",
           marginLeft: "0px"
         }}
