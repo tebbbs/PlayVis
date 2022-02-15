@@ -1,24 +1,13 @@
-import { useState, createContext, useContext } from "react"
+import { useState, createContext, useContext, useEffect } from "react"
 import * as defaults from "./GroupDefaults"
 import _uniqueId from 'lodash/uniqueId'
 import { Slider } from "@mui/material"
-import { useEffect } from "react";
-
-export const defaultTreeMax = {
-  ...defaults.group(_uniqueId()),
-  children: [
-    defaults.absStep(_uniqueId()),
-    { ...defaults.group(_uniqueId()), isMax: true, children: [
-      { ...defaults.relStep(_uniqueId()) },
-      { ...defaults.relStep(_uniqueId()) }
-    ]}
-  ]
-};
 
 export const defaultTree = {
   ...defaults.group(_uniqueId()),
+  isRoot: true,
   children: [
-    defaults.absStep(_uniqueId()),
+    defaults.stepOne(_uniqueId()),
     defaults.relStep(_uniqueId()),
     defaults.relStep(_uniqueId())
   ]
@@ -55,7 +44,7 @@ const Group = ({ node, setNode, onDel }) => {
 
   const [collapsed, setCollapsed] = useState(false);
 
-  const { children, colour, loops } = node;
+  const { children, colour } = node;
 
   const delChild = (delid) =>
     setNode({ ...node, children: children.filter(child => child.id !== delid) });
@@ -66,10 +55,7 @@ const Group = ({ node, setNode, onDel }) => {
   return (
     <div className="groupdiv" style={{ backgroundColor: colour }}>
       <div style={{ display: "flex", justifyContent: "space-between", align: "center" }}>
-        <div>
-          Loops:
-          <input type="number" className="valInput" value={loops} min="1" onChange={(e) => setNode({ ...node, loops: +e.target.value })} />
-        </div>
+        <Loop state={node} setState={setNode} />
         <div>
           <button type="button" onClick={() => setCollapsed(curr => !curr)} >{collapsed ? "Expand" : "Collapse"}</button>
           <DelButton onDel={onDel} />
@@ -83,6 +69,27 @@ const Group = ({ node, setNode, onDel }) => {
             <AddChild addChild={addChild} />
           </>}
       </div>
+    </div>
+  )
+}
+
+const Loop = ({ state, setState }) => {
+
+  const { loops, isMax, isRel, isStep, isRoot } = state;
+  const setLoops = (n) => setState({ ...state, loops: n });
+  const toggleIsMax = () => setState({ ...state, isMax: !state.isMax });
+  const canMax = isRel || (!isStep && !isRoot);
+
+  return (
+    <div>
+      Loops:
+      <input type="number" className="valInput" value={loops} min="1" onChange={(e) => setLoops(+e.target.value)}
+        disabled={isMax ? "disabled" : ""} />
+      {canMax &&
+        <>
+          <input type="checkbox" checked={isMax} onChange={toggleIsMax} />
+          Max
+        </>}
     </div>
   )
 }
@@ -115,11 +122,8 @@ const Step = ({ node, setNode, onDel }) => {
     <div className="step" style={{ backgroundColor: node.colour }}>
       <div style={{ display: "flex", justifyContent: "space-between", align: "center" }}>
         {node.isRel ? "Relative" : "Absolute"} step
-        <div>
-          Loops:
-          <input type="number" className="valInput" value={node.loops} min="1" onChange={(e) => setNode({ ...node, loops: +e.target.value })} />
-        </div>
-        <DelButton onDel={onDel} />
+        <Loop state={node} setState={setNode} />
+        {!node.isRoot && <DelButton onDel={onDel} />}
       </div>
       <div>
         <StepElem feature="BPM   " format={format} range={ranges.bpm} state={bpm} setState={bpm => updateState({ bpm })} />
@@ -163,7 +167,7 @@ const StepElem = ({ feature, format, range, state, setState }) => {
             setSlide({ min, max });
           }}
           onChangeCommitted={e => {
-            setState(({...state, ...slide }));
+            setState(({ ...state, ...slide }));
           }}
           valueLabelDisplay="auto"
           valueLabelFormat={format}

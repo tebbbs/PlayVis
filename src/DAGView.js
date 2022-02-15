@@ -27,15 +27,14 @@ export const DAGView = ({ data, setData }) => {
   const linkprops = [
     ...data.links.flat(),
     ...data.nodes[0].map(n => {
-      return ({
+      return {
         source: "root",
         target: n.id,
         stepid: -1,
         colour: n.stepCol,
         isLHalf: false,
         isRHalf: true,
-
-      })
+      };
     })
   ];
 
@@ -71,13 +70,10 @@ export const DAGView = ({ data, setData }) => {
       const tree = d3Dag
         .sugiyama()
         .layering(d3Dag.layeringSimplex())
-        // might have to remove "large" at some point
-        // .decross(d3Dag.decrossOpt().large("large"))
         .decross(d3Dag.decrossTwoLayer().passes(3))
         .coord(d3Dag.coordQuad())
         .nodeSize(d => [y_sep, 
           d ? d.data.isUnion ? x_sep / 8 : x_sep : x_sep]);
-
 
       // make dag from edge list
       let dag = d3Dag.dagConnect()(linkpairs);

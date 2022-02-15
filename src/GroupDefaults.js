@@ -53,11 +53,22 @@ export const absStep = (id) => ({
   state: absStepState
 });
 
+export const stepOne = (id) => ({
+  isStep: true,
+  isRel: false,
+  isRoot: true,
+  id: "step-" + id,
+  colour: colours[+id % colours.length],
+  loops: 1,
+  state: absStepState
+});
+
 export const group = (id) => ({
   isStep: false,
   id: "group-" + id,
   colour: colours[+id % colours.length],
   loops: 1,
+  isMax: false,
   children: []
 });
 

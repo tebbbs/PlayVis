@@ -78,14 +78,13 @@ export default function App() {
                 </div>
 
                 <div className="dagdiv">
-                  {state.dag &&
-                    (state.dag.nodes.flat().length ?
-                      <DAGView data={state.dag} setData={setDagData} />
-                      : <span> {/* TODO: Make this look nicer  */}
-                        <br></br>
-                        No maps found for this configuration! Try changing it to be less restrictive
-                      </span>
-                    )}
+                  {state.dag?.nodes.flat().length ?
+                    <DAGView data={state.dag} setData={setDagData} />
+                    : <span> {/* TODO: Make this look nicer  */}
+                      <br></br>
+                      No maps found for this configuration! Try changing it to be less restrictive
+                    </span>
+                  }
                 </div>
 
                 <div className="playlistdiv">

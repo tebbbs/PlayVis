@@ -25,21 +25,6 @@ const formatNodes = (nodes) => nodes.map(narr => narr.map(node => (
     }
   })))
 
-// probably need to change this to something more automata 
-// like to handle 'max'/'inf' loop options
-// side note: would be good to follow 'max' by an absolute step to 'reset' things
-const tree2List = (node) => {
-  if (node.isStep)
-    return Array(node.loops).fill(node)
-
-  // unroll this step
-  const unrolled = Array(node.loops).fill(node.children).flat()
-
-  // unroll children
-  return unrolled.flatMap(tree2List);
-
-}
-
 const expandRel = (songs, frontier, step, stepNum) => {
   let links = [];
   const nextFront = frontier.flatMap(curr => {
@@ -70,6 +55,7 @@ const expandAbs = (songs, frontier, step, stepNum) => {
   const nextFront = findAbs(songs, step.state);
 
   if (!nextFront.length) {
+    // console.log("returning empty dag on line 58, result of expandAbs is empty");
     return { frontier: [], links: [], union: null }
   }
   const union = {
@@ -136,12 +122,19 @@ const expandStep = (songs, step, dag) => {
   let { nodes, links, unions } = cloneDeep(dag);
   const stepNum = nodes.length;
   const frontier = nodes[stepNum - 1];
+  // not sure when this would happen but prevents crashes for now
+  if (!frontier) {
+    // console.log("returning empty dag on line 127, nodes[stepNum - 1] is undefined");
+   return { nodes: [], links: [], unions: [] };
+  }
   const result = step.isRel ?
     expandRel(songs, frontier, step, stepNum)
     : expandAbs(songs, frontier, step, stepNum);
 
-  if (result.frontier.length === 0)
-    return { nodes: [], links: [], unions: [] }
+  if (result.frontier.length === 0) {
+    // console.log("returning empty dag on line 133, result of expandRel/Abs is empty");
+    return { nodes: [], links: [], unions: [] };
+  }
 
   links.push(result.links);
 
@@ -174,47 +167,45 @@ const expandStep = (songs, step, dag) => {
 
 }
 
-export const genDAG = (stepTree, songs) => {
-  const steps = tree2List(stepTree);
-
-  const initialNodes = findAbs(songs, steps[0].state)
-    .map(song => ({ ...song, stepNum: 0, stepCol: steps[0].colour }));
-
-  let dag = { nodes: [initialNodes], links: [], unions: [] }
-
-  for (let i = 1; i < steps.length; i++) {
-    const step = steps[i];
-    dag = expandStep(songs, step, dag);
-  }
-  // Add default properties for view
-  dag.nodes = formatNodes(dag.nodes);
-
-  return new DAG(dag.nodes, dag.links, dag.unions);
-
-}
-
 const isEmpty = ({ nodes, links, unions }) =>
   nodes.flat().length === 0
   && links.flat().length === 0
   && unions.length === 0
 
+/**
+ * Sets up an initial DAG before traversing the recipe tree to compute
+ * the final DAG.
+ * @param {*} node 
+ * @param {*} songs 
+ * @returns 
+ */
 export const genDAG3 = (node, songs) => {
-  // Find first step
-  let step1 = node;
-  while (!step1.isStep)
-    step1 = node.children[0];
+
+  // Remove first step from tree to be used to find initial nodes 
+  const step1 = node.children[0];
+  const tree = { ...node, children: node.children.slice(1) };
 
   // Set up initial DAG
-  const initialNodes = findAbs(songs, step1.state)
+  const initNodes = findAbs(songs, step1.state)
     .map(song => ({ ...song, stepNum: 0, stepCol: step1.colour }));
+  let dag = { nodes: [initNodes], links: [], unions: [] };
 
-  let initDag = { nodes: [initialNodes], links: [], unions: [] };
+  // Expand initial step
+  for (let i = 1; i < step1.loops; i++)
+    dag = expandStep(songs, step1, dag);
+  
+  // Expand the rest of the children of the root once
+  dag = treeTraverse(dag, { ...tree, loops: 1 }, songs);
 
-  const tree = cloneDeep(node);
-  tree.id = "root";
-  tree.children = tree.children.slice(1);
+  // Restore the initial step and generate the dag the remaining number of times
+  // This works because 'dag' is now non-empty
+  if (tree.loops > 1) {
+    tree.children = [step1, ...tree.children];
+    tree.loops -= 1;
+    dag = treeTraverse(dag, tree, songs);
+  }
 
-  const { nodes, links, unions } = treeTraverse(initDag, tree, songs);
+  const { nodes, links, unions } = dag;
 
   return new DAG(formatNodes(nodes), links, unions);
 
@@ -244,9 +235,9 @@ export const treeTraverse = (dag, node, songs) => {
       }
     }
     // Just a numerical loop
-    else 
-      for (let i = 0; i < node.loops; i++) 
-        for (let j = 0; j < node.children.length; j++) 
+    else
+      for (let i = 0; i < node.loops; i++)
+        for (let j = 0; j < node.children.length; j++)
           newDag = treeTraverse(newDag, node.children[j], songs);
 
     return newDag;
