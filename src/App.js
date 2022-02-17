@@ -3,12 +3,12 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import { SpotifyLogin, fetchSongs } from './Spotify';
 import { genDAG3 } from './DAGGen';
-import { Groups, defaultTree } from './Group';
+import { Spec, defaultTree } from './Spec';
 import { DAGView } from './DAGView'
 import './index.css';
 import Playlist from './Playlist'
 import { useHistory } from './useHistory'
-import HowTo from './HowTo';
+// import HowTo from './HowTo';
 
 document.title = "playvis"
 
@@ -27,8 +27,8 @@ export default function App() {
   const setTree = (action) => {
     setState(({ tree }) => {
       const newTree = typeof action === "function" ? action(tree) : action;
-      // const newDag = genDAG(newTree, songs);
       const newDag = genDAG3(newTree, songs);
+      // const newDag = tree.dag;
       return { tree: newTree, dag: newDag }
     })
   }
@@ -74,11 +74,11 @@ export default function App() {
                   <h3>Playlist</h3>
                 </div>
                 <div className="recipediv">
-                  {state.tree && <Groups tree={state.tree} setTree={setTree} songs={songs} />}
+                  {state.tree && <Spec tree={state.tree} setTree={setTree} songs={songs} />}
                 </div>
 
                 <div className="dagdiv">
-                  {state.dag?.nodes.flat().length ?
+                  {state.dag ?
                     <DAGView data={state.dag} setData={setDagData} />
                     : <span> {/* TODO: Make this look nicer  */}
                       <br></br>
@@ -91,7 +91,7 @@ export default function App() {
                   {state.dag && <Playlist dag={state.dag} />}
                 </div>
               </div>
-              <HowTo />
+              {/* <HowTo /> */}
             </>
         } />
       </Routes>
