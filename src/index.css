@@ -13,16 +13,9 @@ code {
 
 }
 
-.step {
+.treenode {
   font-size: small;
   background-color: #EEEEEE;
-  padding: 0px;
-  margin: 5px;
-  border-radius: 5px;
-}
-
-.groupdiv {
-  font-size: small;
   padding: 0px;
   margin: 5px;
   border-radius: 5px;

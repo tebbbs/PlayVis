@@ -1,4 +1,4 @@
-import Step from "./Step";
+import FeatureStep from "./FeatureStep";
 
 const absStepState = {
   bpm: { checked: true, min: 150, max: 180 },
@@ -7,7 +7,8 @@ const absStepState = {
 };
 
 const AbsStep = (id) => ({
-  ...Step("absStep", id),
+  ...FeatureStep("Absolute", id),
+  
   state: absStepState,
 
   apply(dag, songs) {
@@ -18,7 +19,10 @@ const AbsStep = (id) => ({
 
   expand(songs, frontier, stepNum) {
     const nextFront = this.find(songs);
-    if (!nextFront.length) return null; // No songs found
+
+    if (nextFront.length === 0)
+      return { links: [], frontier: [], union: null };
+
     // #region format
     const union = {
       id: "union-" + stepNum,
@@ -56,6 +60,19 @@ const AbsStep = (id) => ({
       (!acous.checked || (acous.min / 100 < song.acous && song.acous < acous.max / 100)) &&
       (!dance.checked || (dance.min / 100 < song.dance && song.dance < dance.max / 100))
     )
+  },
+
+  ranges(songs) {
+    const minMax = (feats) => [Math.min(...feats), Math.max(...feats)];
+    return {
+      bpm: minMax(songs.map(s => s.bpm)),
+      acous: minMax(songs.map(s => s.acous)).map(x => x * 100),
+      dance: minMax(songs.map(s => s.dance)).map(x => x * 100)
+    }
+  },
+
+  format(x) { 
+    return x.toFixed(0);
   }
 
 });

@@ -5,11 +5,14 @@ const Step = (type, id) => ({
   ...Node(type, id),
 
   applyCommon(dag, songs) {
+
     if (!dag) return null;
+
     let { nodes, links, unions } = cloneDeep(dag);
     const stepNum = nodes.length;
     const frontier = nodes[stepNum - 1];
     const result = this.expand(songs, frontier, stepNum);
+    
     if (result.frontier.length === 0) return null;
 
     links.push(result.links);
@@ -21,14 +24,18 @@ const Step = (type, id) => ({
   },
 
   expand() {
-    throw new Error("expand() not overwritten");
+    throw new Error("expand() not overridden");
   },
 
   find() {
-    throw new Error("find() not overwritten");
+    throw new Error("find() not overridden");
   },
 
+  renderChildren(setNode) {
+    throw new Error("renderChildren() not overridden");
+  }
 
 });
 
 export default Step;
+

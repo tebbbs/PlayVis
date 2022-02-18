@@ -1,14 +1,15 @@
-import Step from "./Step";
+import FeatureStep from "./FeatureStep";
 
 const relStepState = {
-bpm: { checked: true, min: 0, max: 20 },
+  bpm: { checked: true, min: 0, max: 20 },
   acous: { checked: true, min: 0, max: 30 },
   dance: { checked: true, min: 0, max: 20 }
 };
 
 const RelStep = (id) => ({
+  ...FeatureStep("Relative", id),
+  
   state: relStepState,
-  ...Step("relStep", id),
 
   apply(dag, songs) {
     if (this.isMax) {
@@ -72,6 +73,14 @@ const RelStep = (id) => ({
         && (!acous.checked || (acous.min <= acousdif && acousdif <= acous.max))
         && (!dance.checked || (dance.min <= dancedif && dancedif <= dance.max)))
     })
+  },
+
+  ranges(songs) {
+    return { bpm: [-50, 50], acous: [-50, 50], dance: [-50, 50] }
+  },
+
+  format(x) {
+    return x.toFixed(0) + "%"
   }
 
 });
@@ -79,6 +88,8 @@ const RelStep = (id) => ({
 export default RelStep;
 
 // might be able to extend this to prune at differnt depths for alt steps
+
+// Should be called after the frontier has been pushed to nodes
 const prune = (nodes, links) => {
 
   for (let j = nodes.length - 2; j >= 0; j--) {

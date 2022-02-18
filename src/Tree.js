@@ -1,6 +1,5 @@
 import AbsStep from "./Tree/AbsStep";
 import RelStep from "./Tree/RelStep";
-import AndGroup from "./Tree/AndGroup";
-import OrGroup from "./Tree/OrGroup";
+import Group from "./Tree/Group";
 
-export { AbsStep, RelStep, AndGroup, OrGroup };
+export { AbsStep, RelStep, Group };
