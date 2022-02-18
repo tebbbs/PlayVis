@@ -43,9 +43,8 @@ export const genDAG3 = (node, songs) => {
   let dag = { nodes: [initNodes], links: [], unions: [] };
 
   // Expand initial step
-  for (let i = 1; i < step1.loops; i++)
-    dag = step1.apply(dag, songs);
-
+  dag = { ...step1, loops: step1.loops - 1 }.apply(dag, songs)
+  
   // Expand the rest of the children of the root once
   dag = { ...tree, loops: 1 }.apply(dag, songs);
 
