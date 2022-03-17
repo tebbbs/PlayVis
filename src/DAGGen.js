@@ -6,6 +6,7 @@ const formatNodes = (nodes) => nodes.map(narr => narr.map(node => (
     id: node.id + node.stepNum,
     trackid: node.track.id,
     imgurl: node.track.album.images[1].url,
+    audio: new Audio(node.track.preview_url),
 
     stepNum: node.stepNum,
     stepCol: node.stepCol,
@@ -18,9 +19,7 @@ const formatNodes = (nodes) => nodes.map(narr => narr.map(node => (
     attributes: {
       artist: node.track.artists[0].name,
       genre: node.track.fullArtist.genres[0],
-      bpm: node.bpm,
-      acous: node.acous,
-      dance: node.dance,
+      features: node.features
     }
   })))
 

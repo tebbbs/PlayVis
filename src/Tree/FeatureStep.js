@@ -1,77 +1,70 @@
-import { useState, useEffect, useContext } from "react";
-import { Slider } from "@mui/material";
+import { useContext } from "react";
 import { SongContext } from "../Spec"; // bit hacky
+
+import React from "react";
 import Step from "./Step";
 
+import Popup from 'reactjs-popup';
+import 'reactjs-popup/dist/index.css';
+
 const FeatureStep = (type, id) => ({
-  ...Step(type, id), 
+  ...Step(type, id),
 
-  format() {
-    throw new Error("format() not overridden");
-  },
-
-  ranges(songs) {
-    throw new Error("ranges() not overriden");
+  checkedFeatures() {
+    return Object.entries(this.state)
+      .filter(([_, featState]) => featState.checked);
   },
 
   renderChildren(setNode) {
-    return <StepBody step={this} setStep={setNode} format={this.format} ranges={this.ranges} />
-  }
+    return <StepBody step={this} setStep={setNode} />
+  },
+
+  renderMidHeader(setNode) {
+    return <StepConfig step={this} setStep={setNode} />
+  },
 
 });
 
 export default FeatureStep;
 
-const StepBody = ({ step, setStep, format, ranges }) => {
+const StepConfig = ({ step, setStep }) => {
 
-  const { bpm, acous, dance } = step.state;
+  return <Popup trigger={<button style={{ backgroundColor: "#00000010" }}>⚙️</button>} position="right top"
+    contentStyle={{
+      height: "300px",
+      width: "800px",
+      overflow: "scroll"
+    }}>
+    {Object.entries(step.state).map(([featname, feat], i) => {
 
-  const updateState = (val) => setStep({ ...step, state: { ...step.state, ...val } });
+      const { name, desc } = feat;
+
+      const upateChecked = () => setStep({ ...step, state: { ...step.state, [featname]: { ...feat, checked: !feat.checked }}});
+
+      return (
+        <div key={i}>
+          <p><input type="checkbox" checked={feat.checked/* todo */} onChange={upateChecked/* todo */} /><strong>{name}</strong></p>
+          <p>{desc}</p>
+        </div>
+      )
+    })}
+  </Popup>
+
+}
+
+const StepBody = ({ step, setStep }) => {
+
+  // Changes the value of one feature e.g. BPM
+  const updateState = feat => setStep({ ...step, state: { ...step.state, ...feat } });
+
+  // Change the value of *one value* of one feature i.e. min, max, checked
+  const updateFeat = feat => val => updateState({ [feat]: val })
 
   const songs = useContext(SongContext);
-  const rs = ranges(songs);
 
-  return (
-    <div>
-      <StepElem feature="BPM   " format={format} range={rs.bpm} state={bpm} setState={bpm => updateState({ bpm })} />
-      <StepElem feature="Acous." format={format} range={rs.acous} state={acous} setState={acous => updateState({ acous })} />
-      <StepElem feature="Dance." format={format} range={rs.dance} state={dance} setState={dance => updateState({ dance })} />
-    </div>
-  )
+  return step.checkedFeatures()
+    .map(([featname, feat]) => feat.view(songs, updateFeat(featname)))
+    .map((e, i) => React.cloneElement(e, { key: i }));
+
 }
 
-const StepElem = ({ feature, format, range, state, setState }) => {
-
-  const [rmin, rmax] = range;
-  const [slide, setSlide] = useState({ min: state.min, max: state.max });
-
-  useEffect(() => setSlide(state), [state]);
-
-  return (
-    <div className="stepelem">
-      <div style={{ textAlign: "center" }}>
-        <input type="checkbox" checked={state.checked} onChange={e =>
-          setState({ ...state, checked: !state.checked })
-        } />
-        {feature}
-      </div>
-      <div>
-        <Slider
-          value={[slide.min, slide.max]}
-          onChange={e => {
-            const [min, max] = e.target.value;
-            setSlide({ min, max });
-          }}
-          onChangeCommitted={e => {
-            setState(({ ...state, ...slide }));
-          }}
-          valueLabelDisplay="auto"
-          valueLabelFormat={format}
-          min={rmin}
-          max={rmax}
-          size="small"
-        />
-      </div>
-    </div>
-  )
-}

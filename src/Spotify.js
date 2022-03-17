@@ -3,48 +3,49 @@ import SpotifyWebApi from 'spotify-web-api-js';
 import 'react-spotify-auth/dist/index.css'
 
 export const fetchSongs = async (token) => {
-    if (process.env.NODE_ENV === "development") {
-      return fetch("http://localhost:3001/songs")
-        .then(res => res.json())
-        .then(([songs]) => songs);
-    }
+  if (process.env.NODE_ENV === "development") {
+    return fetch("http://localhost:3001/songs")
+      .then(res => res.json())
+      .then(([songs]) => songs);
+  }
 
-    const limit = 50; // max tracks per api call for Spotify
-    const api = new SpotifyWebApi();
-    api.setAccessToken(token);
+  const limit = 50; // max tracks per api call for Spotify
+  const api = new SpotifyWebApi();
+  api.setAccessToken(token);
 
-      const tracks = await getAllUserTracks(api, limit);
-      const features = await getFeatures(tracks, api, limit);
-      const songs = tracks.map((track, i) =>
-      ({
-        id: track.track.id,
-        track: track.track,
-        bpm: features[i].tempo,
-        acous: features[i].acousticness,
-        dance: features[i].danceability
-      }));
-      return songs;
-    // -----
-    // fetch("http://localhost:3001/songs", {
-    //     method: "POST",
-    //     headers: { "Content-Type": "application/json" },
-    //     body: JSON.stringify(songs)
-    //   })
-    // -----
+  const tracks = await getAllUserTracks(api, limit);
+  const features = await getFeatures(tracks, api, limit);
+  const songs = tracks.map((track, i) =>
+  ({
+    id: track.track.id,
+    track: track.track,
+    features: features[i]
+  }));
+
+  // -----
+  // fetch("http://localhost:3001/songs", {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify(songs)
+  //   })
+  // -----
+
+
+  return songs;
 }
 
 export const getFeatures = async (songs, spotifyApi, limit) => {
   let trackIds = []
   for (let i = 0; i < songs.length; i += limit)
-        trackIds.push(songs
-          .slice(i, i + limit)
-          .map(song => song.track.id))
+    trackIds.push(songs
+      .slice(i, i + limit)
+      .map(song => song.track.id))
 
   const features = await trackIds.reduce(async (prevProm, ids) => {
     const prevRes = await prevProm;
     return spotifyApi.getAudioFeaturesForTracks(ids)
-    .then(data => data.audio_features)
-    .then(response => [...prevRes, ...response])
+      .then(data => data.audio_features)
+      .then(response => [...prevRes, ...response])
   }, Promise.resolve([]));
 
   return features;

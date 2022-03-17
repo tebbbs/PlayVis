@@ -21,7 +21,7 @@ const Node = (type, id) => ({
             {this.renderMidHeader(setNode)}
             {!this.isRoot ? 
               <button type="button" style={{ backgroundColor: "red" }} onClick={onDel}>x</button>
-              : null}
+              :  <button type="button" style={{ backgroundColor: "#00000000" }} onClick={_ => {}}></button>}
           </div>
           {this.renderChildren(setNode)}
         </div >

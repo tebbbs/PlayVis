@@ -1,5 +1,6 @@
 
 const Playlist = ({ dag }) => {
+  // TODO: get checked features from steps via links
   return dag.nodes
     .flat()
     .filter(n => n.isClicked)
@@ -11,7 +12,7 @@ export default Playlist
 const Track = ({ track }) => {
 
   const { attributes, imgurl, name, stepCol } = track;
-  const { bpm, acous, dance, artist } = attributes;
+  const { features, artist } = attributes;
 
   return (
     <div className="playlisttrack" style={{ backgroundColor: stepCol}}>
@@ -19,7 +20,7 @@ const Track = ({ track }) => {
       <div>
       {name} - {artist}
       <br></br>
-      <font size="1">{`BPM: ${bpm.toFixed(0)} - Acousticness: ${(acous * 100).toFixed(3)} - Danceability: ${(dance * 100).toFixed(0)}`}</font>
+      <font size="1">{`BPM: ${features.tempo.toFixed(0)} - Acousticness: ${(features.acousticness * 100).toFixed(3)} - Danceability: ${(features.danceability * 100).toFixed(0)}`}</font>
       </div>
     </div>
   )

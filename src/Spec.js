@@ -24,9 +24,9 @@ export const Spec = ({ tree, setTree, songs }) => {
   }
 
   return (
-    <SongContext.Provider value={songs} >
+    <SongContext.Provider value={songs}>
       {tree.view(
-        newNode => setTree(prev => tUpdate(prev, newNode)),
+         newNode => setTree(prev => tUpdate(prev, newNode)),
         () => setTree(defaultTree))
       }
     </SongContext.Provider>

@@ -76,6 +76,16 @@ export default class DAG {
       .getRoutesFrom(trackid, stepNum);
 
     for (let i = 0; i < newDag.nodes.length; i++) {
+      
+      if (newDag.nodes[i].length === 1) {
+        const node = newDag.nodes[i][0];
+        node.isClicked = true;
+        if (!node.isHighlighted) {
+          node.highlightCol = stepCol;
+          node.isHighlighted = true;
+        }
+      }
+
       for (let j = 0; j < newDag.nodes[i].length; j++) {
         if (i === stepNum && newDag.nodes[i][j].trackid === trackid) {
           newDag.nodes[i][j].isClicked = true;

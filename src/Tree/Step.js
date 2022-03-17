@@ -27,8 +27,13 @@ const Step = (type, id) => ({
     throw new Error("expand() not overridden");
   },
 
-  find() {
-    throw new Error("find() not overridden");
+  find(songs, curr) {
+    let results = songs;
+    this.checkedFeatures().forEach(([name, feat]) => {
+        console.log(feat)
+        results = feat.filter(results, curr);
+    });
+    return results;
   },
 
   renderChildren(setNode) {

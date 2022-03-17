@@ -1,15 +1,10 @@
 import FeatureStep from "./FeatureStep";
-
-const absStepState = {
-  bpm: { checked: true, min: 150, max: 180 },
-  acous: { checked: true, min: 0, max: 30 },
-  dance: { checked: true, min: 65, max: 100 }
-};
+import { defaultAbsStepState } from "./FeatureInfo";
 
 const AbsStep = (id) => ({
   ...FeatureStep("Absolute", id),
   
-  state: absStepState,
+  state: defaultAbsStepState,
 
   apply(dag, songs) {
     for (let i = 0; i < this.loops; i++)
@@ -52,29 +47,6 @@ const AbsStep = (id) => ({
     const links = [...l1s, ...l2s];
     return { frontier: nFront, links, union };
   },
-
-  find(songs) {
-    const { bpm, acous, dance } = this.state;
-    return songs.filter(song =>
-      (!bpm.checked || (bpm.min < song.bpm && song.bpm < bpm.max)) &&
-      (!acous.checked || (acous.min / 100 < song.acous && song.acous < acous.max / 100)) &&
-      (!dance.checked || (dance.min / 100 < song.dance && song.dance < dance.max / 100))
-    )
-  },
-
-  ranges(songs) {
-    const minMax = (feats) => [Math.min(...feats), Math.max(...feats)];
-    return {
-      bpm: minMax(songs.map(s => s.bpm)),
-      acous: minMax(songs.map(s => s.acous)).map(x => x * 100),
-      dance: minMax(songs.map(s => s.dance)).map(x => x * 100)
-    }
-  },
-
-  format(x) { 
-    return x.toFixed(0);
-  }
-
 });
 
 export default AbsStep;

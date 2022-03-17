@@ -66,6 +66,7 @@ export const DAGView = ({ data, setData }) => {
         ? svg.select("g")
         : svg.append("g");
 
+
       // declare a dag layout
       const tree = d3Dag
         .sugiyama()
@@ -165,11 +166,20 @@ export const DAGView = ({ data, setData }) => {
         // Add click behaviour
         nodeUpdate
           .on("click", (event, d) => {
-
             // Remove nodes and links without a route through this node
-            let newDag = data.chooseSong(d.data);
+            const newDag = data.chooseSong(d.data);
             setData(newDag);
 
+          });
+
+        // Add hover-over behaviour
+        nodeUpdate 
+          .on("mouseover", (event, d) => {
+            d.data.audio.play();
+          })
+          .on("mouseout", (event, d) => {
+            d.data.audio.pause();
+            d.data.audio.currentTime = 0;
           });
 
         // Initially, hide rectangle highlights from previous renders

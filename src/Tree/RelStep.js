@@ -1,15 +1,10 @@
 import FeatureStep from "./FeatureStep";
-
-const relStepState = {
-  bpm: { checked: true, min: 0, max: 20 },
-  acous: { checked: true, min: 0, max: 30 },
-  dance: { checked: true, min: 0, max: 20 }
-};
+import { defaultRelStepState } from "./FeatureInfo";
 
 const RelStep = (id) => ({
   ...FeatureStep("Relative", id),
   
-  state: relStepState,
+  state: defaultRelStepState,
 
   apply(dag, songs) {
     if (this.isMax) {
@@ -21,9 +16,7 @@ const RelStep = (id) => ({
     }
     else for (let i = 0; i < this.loops; i++)
       dag = this._applyOnce(dag, songs);
-
     return dag;
-
   },
 
   _applyOnce(dag, songs) {
@@ -62,26 +55,6 @@ const RelStep = (id) => ({
     return { frontier: nFront, links };
 
   },
-
-  find(songs, curr) {
-    const { bpm, acous, dance } = this.state;
-    return songs.filter(song => {
-      const bpmdiff = 100 * (song.bpm - curr.bpm) / curr.bpm;
-      const acousdif = 100 * (song.acous - curr.acous) / curr.acous;
-      const dancedif = 100 * (song.dance - curr.dance) / curr.dance;
-      return ((!bpm.checked || (bpm.min <= bpmdiff && bpmdiff <= bpm.max))
-        && (!acous.checked || (acous.min <= acousdif && acousdif <= acous.max))
-        && (!dance.checked || (dance.min <= dancedif && dancedif <= dance.max)))
-    })
-  },
-
-  ranges(songs) {
-    return { bpm: [-50, 50], acous: [-50, 50], dance: [-50, 50] }
-  },
-
-  format(x) {
-    return x.toFixed(0) + "%"
-  }
 
 });
 
