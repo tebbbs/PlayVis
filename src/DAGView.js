@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as d3 from 'd3';
 import * as d3Dag from 'd3-dag';
 
@@ -18,6 +18,8 @@ export const DAGView = ({ data, setData }) => {
 
   // Format data for d3-dag
   // Adds a 'root' node 
+
+  const [muted, setMuted] = useState(true);
 
   const nodelist = [
     ...data.nodes.flat(),
@@ -46,7 +48,7 @@ export const DAGView = ({ data, setData }) => {
       // #region layout
       // helper variables
       const duration = 750;
-      const x_sep = 120;
+      const x_sep = 140;
       const y_sep = 80;
 
       // initialize panning, zooming
@@ -73,14 +75,14 @@ export const DAGView = ({ data, setData }) => {
         .layering(d3Dag.layeringSimplex())
         .decross(d3Dag.decrossTwoLayer().passes(3))
         .coord(d3Dag.coordQuad())
-        .nodeSize(d => [y_sep, 
+        .nodeSize(d => [y_sep,
           d ? d.data.isUnion ? x_sep / 8 : x_sep : x_sep]);
 
       // make dag from edge list
       let dag = d3Dag.dagConnect()(linkpairs);
 
       // prepare node data
-      var all_nodes = dag.descendants();
+      const all_nodes = dag.descendants();
       all_nodes.forEach((n) => {
         const id = n.data.id;
         n.data = nodelist.find(node => node.id === id);
@@ -112,31 +114,49 @@ export const DAGView = ({ data, setData }) => {
         // ****** Nodes section ***************************
 
         // Update the nodes...
-        var node = g
+        const node = g
           .selectAll("g.node")
           .data(nodes, d => d.data.id)
 
         // Enter any new nodes at the parent's previous position.
-        var nodeEnter = node
+        const nodeEnter = node
           .enter()
           .filter(d => !d.data.isUnion)
           .append("g")
           .attr("class", "node")
-          .attr("transform", function (d) {
-            return "translate(" + source.y0 + "," + source.x0 + ")";
-          })
-          // .on("mouseover", tip.show)
-          // .on("mouseout", tip.hide)
+          .attr("transform", "translate(" + source.y0 + "," + source.x0 + ")")
           .attr("visible", true);
 
         // Add album art
         nodeEnter
           .append("svg:image")
           .attr("href", d => d.data.imgurl)
-          .attr("x", _ => -25)
-          .attr("y", _ => -25)
+          .attr("x", -25)
+          .attr("y", -25)
           .attr("height", 50)
           .attr("width", 50)
+
+        // Add play button symbol
+        const play = nodeEnter
+          .append("g")
+          .attr("pointer-events", "none")
+          .attr("opacity", "0");
+
+        // Circle
+        play
+          .append("circle")
+          .attr("cx", 0)
+          .attr("cy", 0)
+          .attr("r", 20)
+          .style("fill", "#00000070")
+          .style("stroke", "#909090");
+
+        // Triangle
+        play
+          .append("path")
+          .attr("d", d3.symbol().type(d3.symbolTriangle).size(150))
+          .attr("transform", "rotate(90)")
+          .style("fill", "#FFFFFF90");
 
         // Add names as node labels
         nodeEnter
@@ -144,24 +164,30 @@ export const DAGView = ({ data, setData }) => {
           .attr("dy", 40)
           .attr("dx", -25)
           .attr("text-anchor", "start")
-          .text(d => d.data.name);
+          .text(d => {
+            const name = d.data.name;
+            return name.length <= 20
+             ? name
+             : name.slice(0, 20) + "..."
+          })
 
         // Add rectangles for highlighting
         nodeEnter
           .append("rect")
-          .attr("x", _ => -27)
-          .attr("y", _ => -27)
+          .attr("x", -27)
+          .attr("y", -27)
           .attr("height", 54)
           .attr("width", 54)
-          .attr("fill", "transparent")
+          .attr("fill", "transparent");
+
 
         // UPDATE
 
         // not sure why merge doesn't work but this is ok for now
         // https://observablehq.com/@d3/selection-join - might help
 
-        // var nodeUpdate = nodeEnter.merge(node);
-        var nodeUpdate = g.selectAll("g.node");
+        // const nodeUpdate = nodeEnter.merge(node);
+        const nodeUpdate = g.selectAll("g.node");
 
         // Add click behaviour
         nodeUpdate
@@ -169,23 +195,30 @@ export const DAGView = ({ data, setData }) => {
             // Remove nodes and links without a route through this node
             const newDag = data.chooseSong(d.data);
             setData(newDag);
-
           });
 
         // Add hover-over behaviour
-        nodeUpdate 
-          .on("mouseover", (event, d) => {
+        nodeUpdate
+          .on("mouseover", function (event, d) {
+            if (muted) return;
             d.data.audio.play();
+            d3.select(this)
+              .select("g")
+              .attr("opacity", "1");
           })
-          .on("mouseout", (event, d) => {
+          .on("mouseout", function (event, d) {
+            if (muted) return;
             d.data.audio.pause();
             d.data.audio.currentTime = 0;
+            d3.select(this)
+              .select("g")
+              .attr("opacity", "0");
           });
 
         // Initially, hide rectangle highlights from previous renders
         nodeUpdate
           .select("rect")
-          .attr("visibility", "hidden");
+          .attr("opacity", "0");
 
         // Highlight any clicked/highlighted nodes
         let nodeHighlight = d3
@@ -196,7 +229,7 @@ export const DAGView = ({ data, setData }) => {
         nodeHighlight
           .select("rect")
           .attr("stroke", d => d.data.highlightCol)
-          .attr("visibility", "visible");
+          .attr("opacity", "1");
 
         // Reduce opacity of other instances
         nodeHighlight
@@ -208,16 +241,14 @@ export const DAGView = ({ data, setData }) => {
         nodeUpdate
           .transition()
           .duration(duration)
-          .attr("transform", function (d) {
-            return "translate(" + d.y + "," + d.x + ")";
-          });
+          .attr("transform", d => "translate(" + d.y + "," + d.x + ")");
 
         // Remove any exiting nodes
-        var nodeExit = node
+        const nodeExit = node
           .exit()
           .transition()
           .duration(duration)
-          .attr("transform", d => "translate(" + source.y + "," + source.x + ")")
+          .attr("transform", "translate(" + source.y + "," + source.x + ")")
           .attr("visible", false)
           .remove();
 
@@ -230,10 +261,10 @@ export const DAGView = ({ data, setData }) => {
         // ****************** links section ***************************
 
         // Update the links...
-        var link = g.selectAll("path.link").data(links, l => "" + l.data[0] + l.data[1]);
+        const link = g.selectAll("path.link").data(links, l => "" + l.data[0] + l.data[1]);
 
         // Enter any new links at the parent's previous position.
-        var linkEnter = link
+        const linkEnter = link
           .enter()
           .insert("path", "g")
           .attr("class", "link")
@@ -243,7 +274,7 @@ export const DAGView = ({ data, setData }) => {
           });
 
         // UPDATE
-        var linkUpdate = linkEnter.merge(link);
+        const linkUpdate = linkEnter.merge(link);
 
         // Transition back to the parent element position
         linkUpdate
@@ -306,6 +337,8 @@ export const DAGView = ({ data, setData }) => {
 
   return (
     <>
+      <input type="checkbox" id="muted" value={!muted} onChange={() => setMuted(m => !m)} />
+      <label htmlFor="muted">Play preview on mouseover</label>
       <svg
         ref={ref}
         style={{

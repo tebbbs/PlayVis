@@ -23,13 +23,19 @@ const FeatureStep = (type, id) => ({
     return <StepConfig step={this} setStep={setNode} />
   },
 
+  renderRightHeader(setNode) {
+    return <StepConfig step={this} setStep={setNode} />
+  }
+
 });
 
 export default FeatureStep;
 
 const StepConfig = ({ step, setStep }) => {
 
-  return <Popup trigger={<button style={{ backgroundColor: "#00000010" }}>⚙️</button>} position="right top"
+  return <Popup 
+    trigger={
+      <button className="configButton">⚙️</button>} position="right top"
     contentStyle={{
       height: "300px",
       width: "800px",
@@ -39,7 +45,7 @@ const StepConfig = ({ step, setStep }) => {
 
       const { name, desc } = feat;
 
-      const upateChecked = () => setStep({ ...step, state: { ...step.state, [featname]: { ...feat, checked: !feat.checked }}});
+      const upateChecked = () => setStep({ ...step, state: { ...step.state, [featname]: { ...feat, checked: !feat.checked } } });
 
       return (
         <div key={i}>
@@ -62,9 +68,14 @@ const StepBody = ({ step, setStep }) => {
 
   const songs = useContext(SongContext);
 
-  return step.checkedFeatures()
-    .map(([featname, feat]) => feat.view(songs, updateFeat(featname)))
-    .map((e, i) => React.cloneElement(e, { key: i }));
+  return (
+    <div className="stepBody">
+      {
+        step.checkedFeatures()
+          .map(([featname, feat]) => feat.view(songs, updateFeat(featname)))
+          .map((e, i) => React.cloneElement(e, { key: i }))
+      }
+    </div>);
 
 }
 

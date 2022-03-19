@@ -8,14 +8,19 @@ const RangedStepElem = ({ label, format, range, state, setState }) => {
 
   useEffect(() => setSlide(state), [state]);
 
+
   return (
-    <div className="stepelem">
-      <div style={{ textAlign: "center" }}>
-        <input type="checkbox" checked={state.checked} onChange={e =>
-          setState({ ...state, checked: !state.checked })
-        } />
-        {label}
-      </div>
+    <div className="stepElem">
+
+      <button id="x" onClick={() => setState({ ...state, checked: false })}
+        className="smallDelButton"> - </button>
+
+      <div className="stepElemBody">
+        <div className="stepElemValsAndLabel">
+          <font size={1} className="stepElemTexts">{format(slide.min)}</font>
+          <span className="stepElemTexts">{label}</span>
+          <font size={1} className="stepElemTexts">{format(slide.max)}</font>
+        </div>
         <Slider
           value={[slide.min, slide.max]}
           onChange={e => {
@@ -25,13 +30,12 @@ const RangedStepElem = ({ label, format, range, state, setState }) => {
           onChangeCommitted={e => {
             setState(({ ...state, ...slide }));
           }}
-          valueLabelDisplay="auto"
-          valueLabelFormat={format}
-          step={ (rmax - rmin) / 100 }
+          step={(rmax - rmin) / 100}
           min={rmin}
           max={rmax}
           size="small"
         />
+      </div>
     </div>
   )
 }

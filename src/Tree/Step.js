@@ -30,7 +30,6 @@ const Step = (type, id) => ({
   find(songs, curr) {
     let results = songs;
     this.checkedFeatures().forEach(([name, feat]) => {
-        console.log(feat)
         results = feat.filter(results, curr);
     });
     return results;

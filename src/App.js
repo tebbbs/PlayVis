@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Cookies from 'js-cookie';
-import { SpotifyLogin, fetchSongs } from './Spotify';
-import { genDAG3 } from './DAGGen';
-import { Spec, defaultTree } from './Spec';
-import { DAGView } from './DAGView'
-import './index.css';
-import Playlist from './Playlist'
-import { useHistory } from './useHistory'
+import React, { useEffect, useState } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Cookies from "js-cookie";
+import { SpotifyLogin, fetchSongs } from "./Spotify";
+import { genDAG3 } from "./DAGGen";
+import { Spec, defaultTree } from "./Spec";
+import { DAGView } from "./DAGView";
+import "./index.css";
+import Playlist from "./Playlist";
+import { useHistory } from "./useHistory";
 // import HowTo from './HowTo';
 
 document.title = "playvis"
@@ -34,12 +34,13 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!songs && token)
+    if (!songs && token) {
       fetchSongs(token)
         .then(songs => {
           setSongs(songs);
           setState({ tree: defaultTree, dag: genDAG3(defaultTree, songs) });
         });
+    }
   });
 
   return (
@@ -51,6 +52,7 @@ export default function App() {
           !token
             ? <div style={{ display: "flex", justifyContent: "center" }}>
               <SpotifyLogin setToken={setToken} />
+              <button className="rectButton" onClick={() => setToken("DEMO")}>Demo</button>
             </div>
             : <>
               <div className="gridcontainer">
@@ -61,14 +63,14 @@ export default function App() {
                 </div>
                 <div className="abovedag">
                   <h3>Map</h3>
-                  <button type="button" onClick={
-                    _ => {
+                  <button className="rectButton" type="button" onClick={
+                    () => {
                       console.clear();
                       reset({ tree: defaultTree, dag: genDAG3(defaultTree, songs) });
                     }
                   }>Reset</button>
-                  <button type="button" onClick={undo}>Undo</button>
-                  <button type="button" onClick={redo}>Redo</button>
+                  <button className="rectButton" type="button" onClick={undo}>Undo</button>
+                  <button className="rectButton" type="button" onClick={redo}>Redo</button>
                 </div>
                 <div className="aboveplaylist">
                   <h3>Playlist</h3>

@@ -13,27 +13,82 @@ code {
 
 }
 
-.treenode {
+.loops {
+  display: flex;
+  justify-content: space-between;
+  
+}
+
+.treeNode {
   font-size: small;
   background-color: #EEEEEE;
   padding: 0px;
-  margin: 5px;
+  margin: 4px;
   border-radius: 5px;
 }
 
-.stepelem {
-  margin: 0px 10px;
-  display: inline-block;
-  flex: 1;
-  width: 100px
+.nodeHeader { 
+  display: flex;
+  justify-content: space-between;
+  padding: 5px 0 0 0;
+}
+
+/* .nodeHeaderMid {
+
+} */
+
+/* .nodeHeaderLeft {
+}  */
+
+/* .nodeHeaderRight {
+
+}  */
+
+.stepBody {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stepElem {
+  margin: 2px 2px;
+  padding: 0px 5px;
+  background-color: #FFFccc25;
+  border-radius: 5px; 
+  flex-basis: 29%;
+  flex-grow: 0;
+}
+
+.stepElemBody {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stepElemValsAndLabel {
+  display: flex;
+  justify-content: space-between;
+  width: 90%;
+}
+
+.stepElemTexts {
+  min-width: 30px;
+  text-align: center;
+}
+
+.loops {
+  display: flex;
+
 }
 
 .valInput {
   border-radius: 5px;
+  background-color: #FFFFFF90;
   border: 0;
-  margin: 10px;
-  text-align: center;
-  width: 30px ;
+  padding: 0px;
+  width: 25px;
+  height: min-content;
+
 }
 
 .arrange-horizontally > * {
@@ -43,6 +98,11 @@ code {
 }
 
 button {
+  border: none;
+  color: white
+}
+
+.rectButton {
   background-color: #2e80a0; 
   border: none;
   border-radius: 5px;
@@ -52,6 +112,37 @@ button {
   text-align: center;
   font-size: small;
 }
+
+.configButton {
+  background-color: #00000040;
+  border-radius: 5px;
+  margin: 0 5px 0 0;
+  padding: 0%;
+  border: none;
+  height: 20px;
+  width: 20px
+}
+
+.delButton {  
+  padding: 0%;
+
+  border-radius: 5px;
+  background-color: #ff0022;
+  width: 20px;
+  height: 20px;
+
+}
+
+.smallDelButton {
+  padding: 0%;
+
+  border-radius: 50%;
+  background-color: #00000040;
+  width: 15px;
+  height: 15px;
+
+}
+
 
 .node text {
   font: 12px sans-serif;
@@ -68,7 +159,7 @@ button {
   grid-column-gap: 5px;
   grid-template-columns: 3fr 6fr 3fr;
   grid-template-rows: 0.5fr 11.5fr; 
-  height: 80vh;
+  height: 85vh;
 }
 
 /* column titles */

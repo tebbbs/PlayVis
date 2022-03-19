@@ -44,12 +44,12 @@ const Group = (id) => ({
     return <GroupBody node={this} setNode={setNode} />
   },
 
-  renderMidHeader(setNode) {
+  renderRightHeader(setNode) {
     return this.isRoot ? null :
-      <button type="button"
+      <button className="delButton" type="button"
         onClick={() => setNode({ ...this, collapsed: !this.collapsed })}
         style={{ marginLeft: "auto" }}>
-        {this.collapsed ? "Expand" : "Collapse"}
+        {this.collapsed ? "+" : "-"}
       </button>
   }
 
@@ -71,9 +71,9 @@ const GroupBody = ({ node, setNode }) => {
         <>
           {children.map(child => child.view(setNode, () => delChild(child.id)))}
           <div className="arrange-horizontally">
-            <button type="button" onClick={() => addChild(RelStep(_uniqueId()))}>Add Relative Step</button>
-            <button type="button" onClick={() => addChild(AbsStep(_uniqueId()))}>Add Absolute Step</button>
-            <button type="button" onClick={() => addChild(Group(_uniqueId()))}>Add Group</button>
+            <button className="rectButton" type="button" onClick={() => addChild(RelStep(_uniqueId()))}>Add Relative Step</button>
+            <button className="rectButton" type="button" onClick={() => addChild(AbsStep(_uniqueId()))}>Add Absolute Step</button>
+            <button className="rectButton" type="button" onClick={() => addChild(Group(_uniqueId()))}>Add Group</button>
           </div>
         </>}
     </div>

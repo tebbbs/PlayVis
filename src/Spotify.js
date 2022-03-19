@@ -3,10 +3,10 @@ import SpotifyWebApi from 'spotify-web-api-js';
 import 'react-spotify-auth/dist/index.css'
 
 export const fetchSongs = async (token) => {
-  if (process.env.NODE_ENV === "development") {
-    return fetch("http://localhost:3001/songs")
-      .then(res => res.json())
-      .then(([songs]) => songs);
+
+  if (token === "DEMO" || process.env.NODE_ENV === "development") {
+    const demoSongs = require("./demoSongs.json");
+    return demoSongs;
   }
 
   const limit = 50; // max tracks per api call for Spotify
@@ -21,15 +21,6 @@ export const fetchSongs = async (token) => {
     track: track.track,
     features: features[i]
   }));
-
-  // -----
-  // fetch("http://localhost:3001/songs", {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(songs)
-  //   })
-  // -----
-
 
   return songs;
 }

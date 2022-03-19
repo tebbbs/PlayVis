@@ -51,7 +51,8 @@ const relRangedFeature = (feat) => ({
   view(songs, setState) {
     return <RangedStepElem
       label={this.short}
-      format={x => x.toFixed(0) + "%"}
+      // might have to chage this
+      format={x => `${x >= 0 ? "+" : ""}${x.toFixed(0)}%`}
       state={this}
       range={[-50, 50]}
       setState={setState}
