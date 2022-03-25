@@ -51,7 +51,6 @@ const relRangedFeature = (feat) => ({
   view(songs, setState) {
     return <RangedStepElem
       label={this.short}
-      // might have to chage this
       format={x => `${x >= 0 ? "+" : ""}${x.toFixed(0)}%`}
       state={this}
       range={[-50, 50]}
@@ -72,5 +71,13 @@ export const defaultRelStepState = {
   acousticness: { checked: true, min: 0, max: 30, ...relRangedFeature("acousticness") },
   danceability: { checked: true, min: 0, max: 20, ...relRangedFeature("danceability") },
   energy: { checked: false, min: 0, max: 20, ...relRangedFeature("energy") },
-  key: { checked: false /* more needed here */, ...info.key, filter() { } }
+  key: { checked: false /* more needed here */, ...info.key, filter() { /* todo */} }
 };
+
+export const decreasingStep = {
+  tempo: { checked: true, min: -20, max: 0, ...relRangedFeature("tempo") },
+  acousticness: { checked: true, min: 0, max: 30, ...relRangedFeature("acousticness") },
+  danceability: { checked: true, min: -20, max: 20, ...relRangedFeature("danceability") },
+  energy: { checked: false, min: 0, max: 20, ...relRangedFeature("energy") },
+  key: { checked: false /* more needed here */, ...info.key, filter() { /* todo */} }
+}

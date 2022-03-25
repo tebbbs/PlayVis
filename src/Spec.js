@@ -5,10 +5,11 @@ import _uniqueId from 'lodash/uniqueId';
 export const defaultTree = {
   ...Group(_uniqueId()),
   isRoot: true,
+  canMax() { return false },
   children: [
-    { ...AbsStep(_uniqueId()), isRoot: true },
+    {...AbsStep(_uniqueId()), isRoot: true },
     RelStep(_uniqueId()),
-    RelStep(_uniqueId())
+    RelStep(_uniqueId()),
   ]
 };
 

@@ -1,27 +1,31 @@
 import DAG from './DAG'
 
-const formatNodes = (nodes) => nodes.map(narr => narr.map(node => (
-  {
-    name: node.track.name,
-    id: node.id + node.stepNum,
-    trackid: node.track.id,
-    imgurl: node.track.album.images[1].url,
-    audio: new Audio(node.track.preview_url),
+const formatNodes = (nodes) => nodes.map(narr => narr.map(node => ({
 
-    stepNum: node.stepNum,
-    stepCol: node.stepCol,
+  name: node.track.name,
+  id: node.id + node.stepNum,
+  trackid: node.track.id,
+  imgurl: node.track.album.images[1].url,
 
-    isUnion: false,
-    isClicked: false,
-    isHighlighted: false,
-    highlightCol: "clear",
+  audio: node.track.preview_url ? new Audio(node.track.preview_url) : null,
 
-    attributes: {
-      artist: node.track.artists[0].name,
-      genre: node.track.fullArtist.genres[0],
-      features: node.features
-    }
-  })))
+  stepNum: node.stepNum,
+  stepCol: node.stepCol,
+
+  isUnion: false,
+  isClicked: false,
+  isHighlighted: false,
+  highlightCol: "clear",
+
+  attributes: {
+    artist: node.track.artists[0].name,
+    genre: node.track.fullArtist.genres[0],
+    features: node.features
+  }
+
+})
+
+))
 
 /**
  * Sets up an initial DAG before traversing the recipe tree to compute
@@ -43,7 +47,7 @@ export const genDAG3 = (node, songs) => {
 
   // Expand initial step
   dag = { ...step1, loops: step1.loops - 1 }.apply(dag, songs)
-  
+
   // Expand the rest of the children of the root once
   dag = { ...tree, loops: 1 }.apply(dag, songs);
 

@@ -1,15 +1,16 @@
 import FeatureStep from "./FeatureStep";
-import { defaultRelStepState } from "./FeatureInfo";
+import { defaultRelStepState } from "./Features";
 
 const RelStep = (id) => ({
   ...FeatureStep("Relative", id),
   
   state: defaultRelStepState,
+  canMax() { return true },
 
   apply(dag, songs) {
     if (this.isMax) {
       let nextDag = this._applyOnce(dag, songs);
-      while (nextDag) {
+      for (let i = 0; i < this.MAX_LIMIT && nextDag; i++) {
         dag = nextDag;
         nextDag = this._applyOnce(nextDag, songs);
       }

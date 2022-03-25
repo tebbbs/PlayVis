@@ -34,7 +34,7 @@ const RangedStepElem = ({ label, format, range, state, setState }) => {
           min={rmin}
           max={rmax}
           size="small"
-        />
+          />
       </div>
     </div>
   )

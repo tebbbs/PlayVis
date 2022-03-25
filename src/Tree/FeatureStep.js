@@ -33,7 +33,7 @@ export default FeatureStep;
 
 const StepConfig = ({ step, setStep }) => {
 
-  return <Popup 
+  return <Popup
     trigger={
       <button className="configButton">⚙️</button>} position="right top"
     contentStyle={{
@@ -49,7 +49,7 @@ const StepConfig = ({ step, setStep }) => {
 
       return (
         <div key={i}>
-          <p><input type="checkbox" checked={feat.checked/* todo */} onChange={upateChecked/* todo */} /><strong>{name}</strong></p>
+          <p><input type="checkbox" checked={feat.checked} onChange={upateChecked} /><strong>{name}</strong></p>
           <p>{desc}</p>
         </div>
       )
@@ -71,9 +71,11 @@ const StepBody = ({ step, setStep }) => {
   return (
     <div className="stepBody">
       {
-        step.checkedFeatures()
-          .map(([featname, feat]) => feat.view(songs, updateFeat(featname)))
-          .map((e, i) => React.cloneElement(e, { key: i }))
+        step.checkedFeatures().length
+          ? step.checkedFeatures()
+            .map(([featname, feat]) => feat.view(songs, updateFeat(featname)))
+            .map((e, i) => React.cloneElement(e, { key: i }))
+          : <span style={{ textAlign: "center", padding: "20px 0" }}> [any song] </span>
       }
     </div>);
 

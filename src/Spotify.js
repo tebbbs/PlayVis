@@ -4,9 +4,12 @@ import 'react-spotify-auth/dist/index.css'
 
 export const fetchSongs = async (token) => {
 
-  if (token === "DEMO" || process.env.NODE_ENV === "development") {
+  if (["DEMO0", "DEMO1", "DEMO2"].includes(token)) {
     const demoSongs = require("./demoSongs.json");
-    return demoSongs;
+    const index = Number(token.slice(-1));
+
+    return [demoSongs, demoSongs.slice(0, 250), demoSongs.slice(250)][index]
+
   }
 
   const limit = 50; // max tracks per api call for Spotify
@@ -77,56 +80,24 @@ export const getAllUserTracks = async (spotifyApi, limit) => {
   }));
 }
 
-export const getAllUserTracksParallel = async (spotifyApi, limit) => {
-  const { total } = await spotifyApi.getMySavedTracks();
-
-  let pTracks = [];
-  // i < 200 because of spotify rate limiting
-  for (let i = 0; i < total && i < 200; i += limit)
-    pTracks.push(
-      spotifyApi
-        .getMySavedTracks({ offset: i, limit })
-        .then(data => data.items)
-    )
-  const tracks = await Promise.all(pTracks).then(results => results.flat());
-
-  let pArtists = [];
-  for (let i = 0; i < tracks.length; i += limit)
-    pArtists.push(
-      spotifyApi
-        .getArtists(tracks
-          .slice(i, i + limit)
-          .map(t => t.track.artists[0].id))
-        .then(data => data.artists)
-    )
-
-  const artists = await Promise.all(pArtists).then(results => results.flat());
-
-  return tracks.map((t, i) => ({
-    added_at: t.added_at,
-    track: { ...t.track, fullArtist: artists[i] }
-  }));
-
-
-}
-
-
-export const SpotifyLogin = ({ setToken }) => {
+export const SpotifyLogin = (props) => {
 
   const [uri, noCookie] = process.env.NODE_ENV === "development"
-    ? ["http://localhost:3000/", false]
-    : ["https://playvis.web.app/", true];
-
+  ? ["http://localhost:3000/", false]
+  : ["https://playvis.web.app/", true];
+  
   return (
+    
     // Display the login page
     <SpotifyAuth
+      {...props}
       redirectUri={uri}
       noCookie={noCookie}
       clientID='c79989282f4f40a2953b4adc36489afc'
       scopes={
         [Scopes.playlistReadCollaborative,
         Scopes.userLibraryRead]}
-      onAccessToken={setToken}
+      onAccessToken={props.setToken}
     />
   )
 }

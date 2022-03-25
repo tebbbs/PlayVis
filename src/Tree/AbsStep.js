@@ -1,10 +1,11 @@
 import FeatureStep from "./FeatureStep";
-import { defaultAbsStepState } from "./FeatureInfo";
+import { defaultAbsStepState } from "./Features";
 
 const AbsStep = (id) => ({
   ...FeatureStep("Absolute", id),
   
   state: defaultAbsStepState,
+  canMax() { return false },
 
   apply(dag, songs) {
     for (let i = 0; i < this.loops; i++)

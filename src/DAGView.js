@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import * as d3 from 'd3';
 import * as d3Dag from 'd3-dag';
 
@@ -14,12 +14,10 @@ const useD3 = (renderFn, dependencies) => {
   return ref;
 
 }
-export const DAGView = ({ data, setData }) => {
+export const DAGView = ({ data, setData, muted }) => {
 
   // Format data for d3-dag
   // Adds a 'root' node 
-
-  const [muted, setMuted] = useState(true);
 
   const nodelist = [
     ...data.nodes.flat(),
@@ -167,17 +165,20 @@ export const DAGView = ({ data, setData }) => {
           .text(d => {
             const name = d.data.name;
             return name.length <= 20
-             ? name
-             : name.slice(0, 20) + "..."
+              ? name
+              : name.slice(0, 20) + "..."
           })
+
 
         // Add rectangles for highlighting
         nodeEnter
           .append("rect")
-          .attr("x", -27)
-          .attr("y", -27)
-          .attr("height", 54)
-          .attr("width", 54)
+          .attr("x", -28)
+          .attr("y", -28)    
+          .attr("rx", 5)
+          .attr("ry", 5)
+          .attr("height", 56)
+          .attr("width", 56)
           .attr("fill", "transparent");
 
 
@@ -200,14 +201,14 @@ export const DAGView = ({ data, setData }) => {
         // Add hover-over behaviour
         nodeUpdate
           .on("mouseover", function (event, d) {
-            if (muted) return;
+            if (muted || !d.data.audio) return;
             d.data.audio.play();
             d3.select(this)
               .select("g")
               .attr("opacity", "1");
           })
           .on("mouseout", function (event, d) {
-            if (muted) return;
+            if (muted || !d.data.audio) return;
             d.data.audio.pause();
             d.data.audio.currentTime = 0;
             d3.select(this)
@@ -244,7 +245,7 @@ export const DAGView = ({ data, setData }) => {
           .attr("transform", d => "translate(" + d.y + "," + d.x + ")");
 
         // Remove any exiting nodes
-        const nodeExit = node
+        node
           .exit()
           .transition()
           .duration(duration)
@@ -252,8 +253,6 @@ export const DAGView = ({ data, setData }) => {
           .attr("visible", false)
           .remove();
 
-        // On exit reduce the opacity of text labels
-        nodeExit.select("text").style("fill-opacity", 1e-6);
 
         // #endregion nodes
 
@@ -336,9 +335,6 @@ export const DAGView = ({ data, setData }) => {
   )
 
   return (
-    <>
-      <input type="checkbox" id="muted" value={!muted} onChange={() => setMuted(m => !m)} />
-      <label htmlFor="muted">Play preview on mouseover</label>
       <svg
         ref={ref}
         style={{
@@ -348,7 +344,6 @@ export const DAGView = ({ data, setData }) => {
           marginLeft: "0px"
         }}
       />
-    </>
   )
 
 }
