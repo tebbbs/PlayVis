@@ -90,6 +90,16 @@ code {
 
 }
 
+.keySelect {
+  border-radius: 5px;
+  border-width: 2px;
+  border-color: #FFFccc25;
+  height: min-content;
+  margin: 5px 0px 2px 0;
+  background-color: transparent;
+
+}
+
 .groupButtonDiv {
   padding: 0px;
 }

@@ -33,11 +33,12 @@ const absRangedFeature = (feat) => ({
   view(songs, setState) {
     return <RangedStepElem
       label={this.short}
-      format={x => (x * (["acousticness", "danceability", "energy"].includes(feat) ? 100 : 1)).toFixed(0) }
+      format={x => (x * (["acousticness", "danceability", "energy"].includes(feat) ? 100 : 1)).toFixed(0)}
       state={this}
       range={this.ranges(songs)}
       setState={setState}
-    />}
+    />
+  }
 });
 
 const relRangedFeature = (feat) => ({
@@ -55,15 +56,64 @@ const relRangedFeature = (feat) => ({
       state={this}
       range={[-50, 50]}
       setState={setState}
-    />}
+    />
+  }
 });
+
+const RelkeyFeature = () => ({
+  ...info["key"],
+  filter(songs, curr) {
+    /* TODO */
+    return songs;
+  },
+  view(songs, setState) {
+    return (
+      <div className="stepElem">
+        <button id="x" onClick={() => setState({ ...this, checked: false })} className="smallDelButton">
+          -
+        </button>
+        <div className="stepElemBody">
+          <span className="stepElemTexts">{this.short}</span>
+          <select id="keyOpts" className="keySelect">
+            <option>Same</option>
+            <option>Related 1</option>
+            <option>Related 2</option>
+          </select>
+        </div>
+      </div>
+    )
+  }
+})
+
+const AbskeyFeature = () => ({
+  ...info["key"],
+  filter(songs, curr) {
+    /* TODO */
+    return songs;
+  },
+  view(songs, setState) {
+    return (
+      <div className="stepElem">
+        <button id="x" onClick={() => setState({ ...this, checked: false })} className="smallDelButton">
+          -
+        </button>
+        <div className="stepElemBody">
+          <span className="stepElemTexts">{this.short}</span>
+          <select id="keyOpts" className="keySelect">
+            {[...Array(12).keys()].map(i => <option key={i}>{i}</option>)}
+          </select>
+        </div>
+      </div>
+    )
+  }
+})
 
 export const defaultAbsStepState = {
   tempo: { checked: true, min: 150, max: 180, ...absRangedFeature("tempo") },
   acousticness: { checked: true, min: 0, max: 0.30, ...absRangedFeature("acousticness") },
   danceability: { checked: true, min: 0.65, max: 1.00, ...absRangedFeature("danceability") },
   energy: { checked: false, min: 0.4, max: 0.9, ...absRangedFeature("energy") },
-  key: { checked: false, /* more needed here */ ...info.key, filter() { /* todo */ } }
+  key: { checked: false, /* more needed here */ ...AbskeyFeature() }
 };
 
 export const defaultRelStepState = {
@@ -71,13 +121,5 @@ export const defaultRelStepState = {
   acousticness: { checked: true, min: 0, max: 30, ...relRangedFeature("acousticness") },
   danceability: { checked: true, min: 0, max: 20, ...relRangedFeature("danceability") },
   energy: { checked: false, min: 0, max: 20, ...relRangedFeature("energy") },
-  key: { checked: false /* more needed here */, ...info.key, filter() { /* todo */} }
+  key: { checked: false /* more needed here */, ...RelkeyFeature() }
 };
-
-export const decreasingStep = {
-  tempo: { checked: true, min: -20, max: 0, ...relRangedFeature("tempo") },
-  acousticness: { checked: true, min: 0, max: 30, ...relRangedFeature("acousticness") },
-  danceability: { checked: true, min: -20, max: 20, ...relRangedFeature("danceability") },
-  energy: { checked: false, min: 0, max: 20, ...relRangedFeature("energy") },
-  key: { checked: false /* more needed here */, ...info.key, filter() { /* todo */} }
-}

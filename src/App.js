@@ -39,8 +39,9 @@ export default function App() {
     if (!songs && token) {
       fetchSongs(token)
         .then(songs => {
-          setSongs(songs);
-          setState({ tree: defaultTree, dag: genDAG3(defaultTree, songs) });
+          const audioSongs = songs.map(song => ({ ...song, audio: song.track.preview_url ? new Audio(song.track.preview_url) : null }));
+          setSongs(audioSongs);
+          setState({ tree: defaultTree, dag: genDAG3(defaultTree, audioSongs) });
         });
     }
   });
@@ -99,7 +100,7 @@ export default function App() {
 
                 <div className="dagdiv">
                   {state.dag
-                    ? <DAGView data={state.dag} setData={setDagData} muted={muted} />
+                    ? <DAGView data={state.dag} setData={setDagData} muted={muted} /> /* <span> TEST </span> */
                     : <h4 style={{ textAlign: "center", margin: "10% 20% " }}>
                       {songs
                         ? "No maps can be generated from your library with this specification, try relaxing some parameters!"

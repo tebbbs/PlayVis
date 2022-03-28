@@ -7,7 +7,7 @@ const formatNodes = (nodes) => nodes.map(narr => narr.map(node => ({
   trackid: node.track.id,
   imgurl: node.track.album.images[1].url,
 
-  audio: node.track.preview_url ? new Audio(node.track.preview_url) : null,
+  audio: node.audio,
 
   stepNum: node.stepNum,
   stepCol: node.stepCol,

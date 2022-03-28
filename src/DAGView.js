@@ -174,7 +174,7 @@ export const DAGView = ({ data, setData, muted }) => {
         nodeEnter
           .append("rect")
           .attr("x", -28)
-          .attr("y", -28)    
+          .attr("y", -28)
           .attr("rx", 5)
           .attr("ry", 5)
           .attr("height", 56)
@@ -335,15 +335,15 @@ export const DAGView = ({ data, setData, muted }) => {
   )
 
   return (
-      <svg
-        ref={ref}
-        style={{
-          height: "1000%",
-          width: "1000%",
-          marginRight: "0px",
-          marginLeft: "0px"
-        }}
-      />
+    <svg
+      ref={ref}
+      style={{
+        height: "1000%",
+        width: "1000%",
+        marginRight: "0px",
+        marginLeft: "0px"
+      }}
+    />
   )
 
 }
