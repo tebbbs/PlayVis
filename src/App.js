@@ -100,7 +100,11 @@ export default function App() {
 
                 <div className="dagdiv">
                   {state.dag
-                    ? <DAGView data={state.dag} setData={setDagData} muted={muted} /> /* <span> TEST </span> */
+                    ? state.dag.links.flat().length < 1000
+                      ? <DAGView data={state.dag} setData={setDagData} muted={muted} />
+                      : <h4 style={{ textAlign: "center", margin: "10% 20% " }}> 
+                        Map too large to render! Try making your constraints more specific
+                        </h4>
                     : <h4 style={{ textAlign: "center", margin: "10% 20% " }}>
                       {songs
                         ? "No maps can be generated from your library with this specification, try relaxing some parameters!"

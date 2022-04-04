@@ -66,15 +66,24 @@ export const DAGView = ({ data, setData, muted }) => {
         ? svg.select("g")
         : svg.append("g");
 
+      // TODO: column numbers
+      // data.nodes.forEach((_, i) => {
+      //   svg.enter()
+      //     .append("circle")
+      //     .attr("cx", 0)
+      //     .attr("cy", 0)
+      //     .attr("r", 20)
+      //     .style("fill", "#00000070")
+      //     .style("stroke", "#909090");
+      // })
 
       // declare a dag layout
       const tree = d3Dag
         .sugiyama()
-        .layering(d3Dag.layeringSimplex())
-        .decross(d3Dag.decrossTwoLayer().passes(3))
+        .layering(d3Dag.layeringLongestPath())
+        .decross(d3Dag.decrossTwoLayer().passes(96))
         .coord(d3Dag.coordQuad())
-        .nodeSize(d => [y_sep,
-          d ? d.data.isUnion ? x_sep / 8 : x_sep : x_sep]);
+        .nodeSize(d => [y_sep, d ? d.data.isUnion ? x_sep / 8 : x_sep : x_sep]);
 
       // make dag from edge list
       let dag = d3Dag.dagConnect()(linkpairs);

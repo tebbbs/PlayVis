@@ -12,8 +12,8 @@ const Group = (id) => ({
   canMax() { return this.children.length > 0 },
 
   apply(dag, songs) {
-    return this.isMax ?
-      this.applyMax(dag, songs)
+    return this.isMax 
+      ? this.applyMax(dag, songs)
       : this.applyLoop(dag, songs);
   },
 

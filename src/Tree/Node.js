@@ -55,12 +55,13 @@ const Node = (type, id) => ({
 
 export default Node;
 
-
 const Loop = ({ state, setState }) => {
 
   const { loops, isMax } = state;
+
   const setLoops = (n) => setState({ ...state, loops: n });
   const toggleIsMax = () => setState({ ...state, isMax: !state.isMax });
+
   return (
     <div className="loops">
       <label htmlFor="lps">Loops: </label>

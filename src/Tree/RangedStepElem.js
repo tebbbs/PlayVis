@@ -31,9 +31,7 @@ const RangedStepElem = ({ label, format, range, state, setState }) => {
             setState(({ ...state, ...slide }));
           }}
           step={(rmax - rmin) / 100}
-          min={rmin}
-          max={rmax}
-          size="small"
+          min={rmin} max={rmax} size="small"
           />
       </div>
     </div>
