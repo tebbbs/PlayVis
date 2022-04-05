@@ -33,9 +33,10 @@ export default FeatureStep;
 
 const StepConfig = ({ step, setStep }) => {
 
+  //⚙️
   return <Popup
     arrow={true}
-    trigger={<button className="configButton">⚙️</button>}
+    trigger={<button className="configButton">...</button>}
     position="right center"
     offsetX={40}
     contentStyle={{ height: "auto", width: "auto" }}

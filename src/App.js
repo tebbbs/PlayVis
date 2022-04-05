@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
 import { SpotifyLogin, fetchSongs } from "./Spotify";
-import { genDAG3 } from "./DAGGen";
+import { genDAG } from "./DAGGen";
 import { Spec, defaultTree } from "./Spec";
 import { DAGView } from "./DAGView";
 import "./index.css";
@@ -16,6 +16,11 @@ export default function App() {
   const [songs, setSongs] = useState();
 
   const [muted, setMuted] = useState(true);
+  const [allowReps, setAllowReps] = useState(true);
+
+  const [realTime, setRealTime] = useState(true)
+  // intermediate tree used to store tree state updates before commiting them with "Update graph" button
+  const [incTree, setIncTree] = useState(defaultTree);
 
   const [state, setState, undo, redo, reset] = useHistory({ tree: undefined, dag: undefined });
 
@@ -27,11 +32,13 @@ export default function App() {
   };
 
   const setTree = (action) => {
-    setState(({ tree }) => {
-      const newTree = typeof action === "function" ? action(tree) : action;
-      const newDag = genDAG3(newTree, songs);
-      return { tree: newTree, dag: newDag }
-    })
+    if (realTime)
+      setState(({ tree }) => {
+        const newTree = typeof action === "function" ? action(tree) : action;
+        const newDag = genDAG(newTree, songs, allowReps);
+        return { tree: newTree, dag: newDag }
+      })
+    setIncTree(tree => typeof action === "function" ? action(tree) : action);
   }
 
   useEffect(() => {
@@ -40,51 +47,81 @@ export default function App() {
         .then(songs => {
           const audioSongs = songs.map(song => ({ ...song, audio: song.track.preview_url ? new Audio(song.track.preview_url) : null }));
           setSongs(audioSongs);
-          setState({ tree: defaultTree, dag: genDAG3(defaultTree, audioSongs) });
+          setState({ tree: defaultTree, dag: genDAG(defaultTree, audioSongs, allowReps) });
         });
     }
   });
 
+  const Login = () => {
+    return (
+      <div style={{ textAlign: "center" }} >
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <SpotifyLogin setToken={setToken} />
+        </div>
+        <br></br>
+        <button className="rectButton" onClick={() => setToken("DEMO0")}>Demo</button>
+        <button className="rectButton" onClick={() => setToken("DEMO1")}>Demo 1</button>
+        <button className="rectButton" onClick={() => setToken("DEMO2")}>Demo 2</button>
+      </div>)
+  }
+
   return (
     <>
-      <h1 style={{ textAlign: "center" }}>playvis</h1>
+      <h1 style={{ textAlign: "center", margin: "10px" }}>playvis</h1>
       {!token
-        ? <div style={{ textAlign: "center" }} >
-          <div style={{ display: "flex", justifyContent: "center" }}>
-            <SpotifyLogin setToken={setToken} />
-          </div>
-          <br></br>
-          <button className="rectButton" onClick={() => setToken("DEMO0")}>Demo</button>
-          <button className="rectButton" onClick={() => setToken("DEMO1")}>Demo 1</button>
-          <button className="rectButton" onClick={() => setToken("DEMO2")}>Demo 2</button>
-        </div>
+        ? <Login />
         : <>
           <div className="gridcontainer">
 
             <div className="abovespec">
-              <h3>Specification</h3>
-              {songs && <button className="rectButton" type="button" onClick={
-                () => reset({ tree: defaultTree, dag: genDAG3(defaultTree, songs) })}>
-                Reset
-              </button>
+              <span className="columnTitle">Specification</span>
+              {songs &&
+                <>
+                  <button className="rectButton" type="button" onClick={() => {
+                    setIncTree(defaultTree);
+                    reset({ tree: defaultTree, dag: genDAG(defaultTree, songs, allowReps) });
+                  }}>
+                    Reset
+                  </button>
+
+                  <MySwitch checked={realTime}
+                    onChange={() => {
+                      reset({ tree: incTree, dag: genDAG(incTree, songs, allowReps) });
+                      setRealTime(rt => !rt);
+                    }}
+                    label="update graph with every change"
+                  />
+                  {!realTime && <button className="rectButton" type="button" onClick={
+                    () => reset({ tree: incTree, dag: genDAG(incTree, songs, allowReps) })
+                  }> Update Graph </button>
+                  }
+                </>
               }
             </div>
 
             <div className="abovedagouter">
-              <div className="abovedaginner">
-                <h3>Map</h3>
+
+              <span className="columnTitle">Graph</span>
+              <div style={{ display: "flex" }}>
                 <button className="rectButton" type="button" onClick={undo}>Undo</button>
                 <button className="rectButton" type="button" onClick={redo}>Redo</button>
-                <MySwitch checked={!muted} onChange={() => setMuted(m => !m)} label="Play preview on mouseover" />
-                <label htmlFor="muted" style={{ margin: "0 0 0 5px" }}>Play preview on mouseover</label>
               </div>
-              <span>Click on songs to add them to the playlist</span>
+              <div style={{ display: "flex" }}>
+                <MySwitch checked={!muted} onChange={() => setMuted(m => !m)} label="play preview on mouseover" />
+                <MySwitch id={"reps"} checked={allowReps} label="allow repeated songs in graph" onChange={
+                  () => {
+                    setAllowReps(r => !r);
+                    if (realTime) setDagData(genDAG(state.tree, songs, !allowReps));
+                  }
+                } />
+              </div>
+              <span style={{ textAlign: "center" }}>Click on songs to add them to the playlist!</span>
             </div>
 
             <div className="aboveplaylist">
-              <h3>Playlist</h3>
+              <span className="columnTitle">Playlist</span>
               <button className="rectButton" type="button" onClick={
-                () => setDagData(genDAG3(state.tree, songs))}>
+                () => setDagData(genDAG(state.tree, songs, allowReps))}>
                 Clear
               </button>
               <button className="rectButton" type="button"
@@ -95,12 +132,12 @@ export default function App() {
             </div>
 
             <div className="specdiv">
-              {state.tree && <Spec tree={state.tree} setTree={setTree} songs={songs} />}
+              {state.tree && <Spec tree={incTree} setTree={setTree} songs={songs} />}
             </div>
 
             <div className="dagdiv">
               {state.dag
-                ? state.dag.links.flat().length < 1000
+                ? state.dag.links.flat().length < 10000
                   ? <DAGView data={state.dag} setData={setDagData} muted={muted} />
                   : <h4 style={{ textAlign: "center", margin: "10% 20% " }}>
                     Map too large to render! Try making your constraints more specific

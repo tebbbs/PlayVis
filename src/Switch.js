@@ -47,8 +47,26 @@ const AntSwitch = styled(Switch)(({ theme }) => ({
 }));
 
 export default function MySwitch(props) {
-  return <AntSwitch
-    {...props}
-    inputProps={{ 'aria-label': 'controlled' }}
-  />
+  return (
+    <div style={ "label" in props ? {
+      fontSize: 12,
+      textAlign: "center",
+      backgroundColor: "#AAAAAA20",
+      borderRadius: "5px",
+      padding: "0px 2px",
+      margin: "0 5px",
+      color: "#666666",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      minWidth: "120px",
+      maxWidth: "120px"
+    } : {}}>
+
+      <span style={{ marginBottom: "3px"}}>{props.label}</span>
+      <AntSwitch
+        {...props}
+        inputProps={{ 'aria-label': 'controlled' }}
+      />
+    </div>)
 };

@@ -4,14 +4,12 @@ import { cloneDeep } from "lodash";
 const Step = (type, id) => ({
   ...Node(type, id),
 
-  applyCommon(dag, songs) {
+  applyCommon(dag, songs, allowReps) {
 
     if (!dag) return null;
 
     let { nodes, links, unions } = cloneDeep(dag);
-    const stepNum = nodes.length;
-    const frontier = nodes[stepNum - 1];
-    const result = this.expand(songs, frontier, stepNum);
+    const result = this.expand(songs, nodes, allowReps);
     
     if (result.frontier.length === 0) return null;
 

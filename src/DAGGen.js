@@ -35,7 +35,8 @@ const formatNodes = (nodes) => nodes.map(narr => narr.map(node => ({
  * @param {*} songs 
  * @returns 
  */
-export const genDAG3 = (node, songs) => {
+export const genDAG = (node, songs, allowReps) => {
+
 
   // Remove first step from tree to be used to find initial nodes 
   const step1 = node.children[0];
@@ -47,17 +48,17 @@ export const genDAG3 = (node, songs) => {
   let dag = { nodes: [initNodes], links: [], unions: [] };
 
   // Expand initial step
-  dag = { ...step1, loops: step1.loops - 1 }.apply(dag, songs)
+  dag = { ...step1, loops: step1.loops - 1 }.apply(dag, songs, allowReps)
 
   // Expand the rest of the children of the root once
-  dag = { ...tree, loops: 1 }.apply(dag, songs);
+  dag = { ...tree, loops: 1 }.apply(dag, songs, allowReps);
 
   // Restore the initial step and generate the dag the remaining number of times
   // This works because 'dag' is now non-empty
   if (tree.loops > 1) {
     tree.children = [step1, ...tree.children];
     tree.loops -= 1;
-    dag = tree.apply(dag, songs);
+    dag = tree.apply(dag, songs, allowReps);
   }
 
   // Check for failed graph generation

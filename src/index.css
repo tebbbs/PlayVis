@@ -26,7 +26,7 @@ code {
   border-radius: 5px;
 }
 
-.nodeHeader { 
+.nodeHeader {
   display: flex;
   justify-content: space-between;
   padding: 5px 10px 0 10px;
@@ -53,7 +53,7 @@ code {
   margin: 2px;
   padding: 0px 5px;
   background-color: #FFFccc25;
-  border-radius: 5px; 
+  border-radius: 5px;
   text-align: left;
   flex-basis: 29%;
   flex-grow: 0;
@@ -110,7 +110,7 @@ button {
 }
 
 .rectButton {
-  background-color: #2e80a0; 
+  background-color: #2e80a0;
   border: none;
   border-radius: 5px;
   color: white;
@@ -130,7 +130,7 @@ button {
   width: 20px
 }
 
-.delButton {  
+.delButton {
   padding: 0%;
   border-radius: 5px;
   background-color: #ff0022;
@@ -160,15 +160,20 @@ button {
   stroke-width: 2px;
 }
 
-.gridcontainer { 
+.gridcontainer {
   display: grid;
   grid-column-gap: 5px;
-  grid-template-columns: 3fr 6fr 3fr;
-  grid-template-rows: 0.5fr 11.5fr; 
-  height: 85vh;
+  grid-template-columns: 3.1fr 5.9fr 3fr;
+  grid-template-rows: 0.5fr 11.5fr;
+  height: 90vh;
 }
 
 /* column titles */
+
+.columnTitle {
+  font-size: 14pt;
+  font-weight: bolder;
+}
 
 .abovespec {
   display: flex;
@@ -183,13 +188,13 @@ button {
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px 0 20px;
+  padding: 0 20px 4px 20px;
 }
 
 .abovedaginner {
   display: flex;
   flex-direction: row;
-  justify-content: left;
+  justify-content: space-between;
   align-items: center;
 }
 

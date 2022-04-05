@@ -7,14 +7,21 @@ const AbsStep = (id) => ({
   state: defaultAbsStepState,
   canMax() { return false },
 
-  apply(dag, songs) {
+  apply(dag, songs, allowReps) {
     for (let i = 0; i < this.loops; i++)
-      dag = this.applyCommon(dag, songs);
+      dag = this.applyCommon(dag, songs, allowReps);
     return dag;
   },
 
-  expand(songs, frontier, stepNum) {
-    const nextFront = this.find(songs);
+  expand(songs, nodes, allowReps) {
+
+    const stepNum = nodes.length;
+    const frontier = nodes[stepNum - 1];
+    const allNodeIDs = nodes.flat().map(n => n.track.id);
+
+    const nextFront = allowReps
+      ? this.find(songs)
+      : this.find(songs).filter(n => allNodeIDs.includes(n.id));
 
     if (nextFront.length === 0)
       return { links: [], frontier: [], union: null };

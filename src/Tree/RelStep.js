@@ -7,21 +7,21 @@ const RelStep = (id) => ({
   state: defaultRelStepState,
   canMax() { return true },
 
-  apply(dag, songs) {
+  apply(dag, songs, allowReps) {
     if (this.isMax) {
-      let nextDag = this._applyOnce(dag, songs);
+      let nextDag = this._applyOnce(dag, songs, allowReps);
       for (let i = 0; i < this.MAX_LIMIT && nextDag; i++) {
         dag = nextDag;
-        nextDag = this._applyOnce(nextDag, songs);
+        nextDag = this._applyOnce(nextDag, songs, allowReps);
       }
     }
     else for (let i = 0; i < this.loops; i++)
-      dag = this._applyOnce(dag, songs);
+      dag = this._applyOnce(dag, songs, allowReps);
     return dag;
   },
 
-  _applyOnce(dag, songs) {
-    const next = this.applyCommon(dag, songs)
+  _applyOnce(dag, songs, allowReps) {
+    const next = this.applyCommon(dag, songs, allowReps)
     if (!next) return null;
     const { nodes, links, unions } = next;
     prune(nodes, links);
@@ -29,14 +29,20 @@ const RelStep = (id) => ({
 
   },
 
-  expand(songs, frontier, stepNum) {
+  expand(songs, nodes, allowReps) {
+
+    const stepNum = nodes.length;
+    const frontier = nodes[stepNum - 1];
+    const allNodeIDs = nodes.flat().map(n => n.track.id);
+
     let links = [];
     //#region format
     const nextFront = frontier.flatMap(curr => {
       const next = this.find(songs, curr, this.state)
         .filter(song =>
           song.track.fullArtist.name !== curr.track.fullArtist.name
-          && song.track.name !== curr.track.name
+          && song.track.name !== curr.track.name // check that song doesn't link to itself
+          && (allowReps || !allNodeIDs.includes(song.track.id)) // if reps aren't allowed, check for song in dag
         );
       links.push(...next.map(nxt =>
       ({

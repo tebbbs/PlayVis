@@ -74,10 +74,12 @@ const RelkeyFeature = () => ({
         </button>
         <div className="stepElemBody">
           <span className="stepElemTexts">{this.short}</span>
-          <select id="keyOpts" className="keySelect">
-            <option>Same</option>
-            <option>Related 1</option>
-            <option>Related 2</option>
+          <select id="keyOpts" className="keySelect"
+            value={this.val} onChange={e => setState({ ...this, val: e.target.value })}
+          >
+            <option value="same">Same</option>
+            <option value="rel1">Related 1</option>
+            <option value="rel2">Related 2</option>
           </select>
         </div>
       </div>
@@ -99,8 +101,10 @@ const AbskeyFeature = () => ({
         </button>
         <div className="stepElemBody">
           <span className="stepElemTexts">{this.short}</span>
-          <select id="keyOpts" className="keySelect">
-            {[...Array(12).keys()].map(i => <option key={i}>{i}</option>)}
+          <select id="keyOpts" className="keySelect"
+            value={this.val} onChange={e => setState({ ...this, val: e.target.value })}
+          >
+            {[...Array(12).keys()].map(i => <option key={i} value={i}>{i}</option>)}
           </select>
         </div>
       </div>
@@ -113,7 +117,7 @@ export const defaultAbsStepState = {
   acousticness: { checked: true, min: 0, max: 0.30, ...absRangedFeature("acousticness") },
   danceability: { checked: true, min: 0.65, max: 1.00, ...absRangedFeature("danceability") },
   energy: { checked: false, min: 0.4, max: 0.9, ...absRangedFeature("energy") },
-  key: { checked: false, /* more needed here */ ...AbskeyFeature() }
+  key: { checked: false, val: 3, /* more needed here */ ...AbskeyFeature() }
 };
 
 export const defaultRelStepState = {
@@ -121,5 +125,5 @@ export const defaultRelStepState = {
   acousticness: { checked: true, min: 0, max: 30, ...relRangedFeature("acousticness") },
   danceability: { checked: true, min: 0, max: 20, ...relRangedFeature("danceability") },
   energy: { checked: false, min: 0, max: 20, ...relRangedFeature("energy") },
-  key: { checked: false /* more needed here */, ...RelkeyFeature() }
+  key: { checked: false, val: "same", /* more needed here */ ...RelkeyFeature() }
 };

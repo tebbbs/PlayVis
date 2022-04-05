@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as d3 from 'd3';
 import * as d3Dag from 'd3-dag';
 
@@ -18,6 +18,8 @@ export const DAGView = ({ data, setData, muted }) => {
 
   // Format data for d3-dag
   // Adds a 'root' node 
+
+  const [yMax, setYmax] = useState(0);
 
   const nodelist = [
     ...data.nodes.flat(),
@@ -40,21 +42,17 @@ export const DAGView = ({ data, setData, muted }) => {
 
   const linkpairs = linkprops.map(linkObj => [linkObj.source, linkObj.target]);
 
+  // helper variables
+  const duration = 750;
+  const x_sep = 140;
+  const y_sep = 80;
+
   const ref = useD3(
     (svg) => {
 
       // #region layout
-      // helper variables
-      const duration = 750;
-      const x_sep = 140;
-      const y_sep = 80;
-
-      // initialize panning, zooming
       const zoom = d3
-        .zoom()
-        .scaleExtent([0.8, 1.2]) // zoom from 80% to 120%
-        // TODO: translateExtent()
-        .on("zoom", (event) => g.attr("transform", event.transform))
+        .zoom(false)
 
       // disable scroll zooming
       svg
@@ -65,17 +63,6 @@ export const DAGView = ({ data, setData, muted }) => {
       const g = svg.select("g").node()
         ? svg.select("g")
         : svg.append("g");
-
-      // TODO: column numbers
-      // data.nodes.forEach((_, i) => {
-      //   svg.enter()
-      //     .append("circle")
-      //     .attr("cx", 0)
-      //     .attr("cy", 0)
-      //     .attr("r", 20)
-      //     .style("fill", "#00000070")
-      //     .style("stroke", "#909090");
-      // })
 
       // declare a dag layout
       const tree = d3Dag
@@ -262,7 +249,6 @@ export const DAGView = ({ data, setData, muted }) => {
           .attr("visible", false)
           .remove();
 
-
         // #endregion nodes
 
         // #region links
@@ -317,10 +303,7 @@ export const DAGView = ({ data, setData, muted }) => {
           .duration(duration)
           .call(
             zoom.transform,
-            d3
-              .zoomTransform(g.node())
-            // .translate(-(source.y - source.y0), 0)
-            // .translate(-(source.y - source.y0), -(source.x - source.x0))
+            d3.zoomTransform(g.node())
           );
 
         // Store the old positions for transition.
@@ -328,6 +311,9 @@ export const DAGView = ({ data, setData, muted }) => {
           d.x0 = d.x;
           d.y0 = d.y;
         });
+
+        // Assign max y-coordinate value
+        setYmax(y_sep + Math.max(...nodes.map(d => d.x)));
 
         // Creates a curved (diagonal) path from parent to the child nodes
         function diagonal(s, d) {
@@ -344,15 +330,45 @@ export const DAGView = ({ data, setData, muted }) => {
   )
 
   return (
-    <svg
-      ref={ref}
-      style={{
-        height: "1000%",
-        width: "1000%",
-        marginRight: "0px",
-        marginLeft: "0px"
-      }}
-    />
+    <div style={{ position: "relative", height: "95%", width: "95%" }}>
+      <svg 
+        ref={ref}
+        style={{
+          minWidth: "100%",
+          minHeight: "100%",
+          width: `${x_sep * data.nodes.length + 60}px`,
+          height: `${yMax}px`,
+          marginTop: "15px",
+          marginRight: "0px",
+          marginLeft: "0px"
+        }}
+      />
+      {/*  column numbers and dashed lines*/}
+      <div style={{
+        pointerEvents: "none",
+        position: "absolute", top: 0, left: 0,
+        display: "flex",
+        alignItems: "flex-start",
+        paddingTop: "2px",
+        paddingLeft: x_sep / 8,
+      }}>
+        {data.nodes.map((_, i) =>
+          <div key={i} style={{
+            textAlign: "center",
+            color: "#888888",
+            flexBasis: x_sep,
+            flexShrink: 0,
+            borderStyle: i > 0 ? "none none none dashed" : "none",
+            borderColor: "#AAAAAA40",
+            minHeight: "100%",
+            height: `${yMax + 15}px`
+          }}>
+            <i>track {i + 1}</i>
+          </div>
+        )}
+      </div>
+      
+    </div>
   )
 
 }

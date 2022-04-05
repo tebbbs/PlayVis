@@ -11,19 +11,19 @@ const Group = (id) => ({
 
   canMax() { return this.children.length > 0 },
 
-  apply(dag, songs) {
+  apply(dag, songs, allowReps) {
     return this.isMax 
-      ? this.applyMax(dag, songs)
-      : this.applyLoop(dag, songs);
+      ? this.applyMax(dag, songs, allowReps)
+      : this.applyLoop(dag, songs, allowReps);
   },
 
-  applyMax(dag, songs) {
+  applyMax(dag, songs, allowReps) {
     let nextDag = dag;
     let hasResult = true;
     for (let i = 0; i < this.MAX_LIMIT && hasResult; i++) {
       // Loop over children, see if they can be applied
       for (let j = 0; j < this.children.length && hasResult; j++) {
-        nextDag = this.children[j].apply(nextDag, songs);
+        nextDag = this.children[j].apply(nextDag, songs, allowReps);
         if (!nextDag) {
           hasResult = false;
           break;
@@ -35,10 +35,10 @@ const Group = (id) => ({
     return dag;
   },
 
-  applyLoop(dag, songs) {
+  applyLoop(dag, songs, allowReps) {
     for (let i = 0; i < this.loops; i++)
       for (let j = 0; j < this.children.length; j++)
-        dag = this.children[j].apply(dag, songs);
+        dag = this.children[j].apply(dag, songs, allowReps);
     return dag;
   },
 
@@ -60,7 +60,7 @@ const Group = (id) => ({
             <div className="groupButtonDiv">
               <button className="rectButton" type="button" onClick={() => addChild(RelStep(_uniqueId()))}>Add Relative Step</button>
               <button className="rectButton" type="button" onClick={() => addChild(AbsStep(_uniqueId()))}>Add Absolute Step</button>
-              <button className="rectButton" type="button" onClick={() => addChild(Group(_uniqueId()))}>Add Group</button>
+              <button className="rectButton" type="button" onClick={() => addChild(Group(_uniqueId()))}>Add Step Group</button>
             </div>
           </>}
       </div>

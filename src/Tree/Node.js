@@ -72,14 +72,14 @@ const Loop = ({ state, setState }) => {
       {state.canMax()
         ? <>
           <div style={{ margin: "0px 5px 0 5px" }} >
-            <MySwitch checked={isMax} onChange={toggleIsMax} label="Max" />
+            <MySwitch checked={isMax} onChange={toggleIsMax} />
           </div>
           <label htmlFor="cb"><font size={1}>Max</font></label>
         </>
         // hack to align buttons
         : <>
           <div style={{ margin: "0px 5px 0 5px", opacity: 0 }} >
-            <MySwitch checked={isMax} onChange={() => { }} label="Max" />
+            <MySwitch checked={isMax} onChange={() => { }} />
           </div>
           <label style={{ opacity: 0 }} htmlFor="cb">Max</label>
 
