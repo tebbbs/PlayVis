@@ -3,7 +3,7 @@ import { defaultAbsStepState } from "./Features";
 
 const AbsStep = (id) => ({
   ...FeatureStep("Absolute", id),
-  
+
   state: defaultAbsStepState,
   canMax() { return false },
 
@@ -44,7 +44,12 @@ const AbsStep = (id) => ({
 
     // #endregion format
     const nFront = Array.from(new Set(nextFront))
-      .map(node => ({ ...node, stepNum, stepCol: this.colour }));
+      .map(node => ({
+        ...node,
+        stepNum,
+        stepCol: this.colour,
+        stepFeats: this.checkedFeatures().map(([fname, _]) => fname)
+      }));
     const links = [...l1s, ...l2s];
     return { frontier: nFront, links, union };
   },

@@ -52,7 +52,13 @@ const RelStep = (id) => ({
     });
     //#endregion format
     const nFront = Array.from(new Set(nextFront))
-      .map(node => ({ ...node, stepNum, stepCol: this.colour }));
+      .map(node => ({ 
+        ...node, 
+        stepNum, 
+        stepCol: this.colour, 
+        stepFeats: this.checkedFeatures().map(([fname, _]) => fname)
+      }));
+
     return { frontier: nFront, links };
 
   },

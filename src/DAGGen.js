@@ -11,6 +11,7 @@ const formatNodes = (nodes) => nodes.map(narr => narr.map(node => ({
 
   stepNum: node.stepNum,
   stepCol: node.stepCol,
+  stepFeats: node.stepFeats,
 
   isUnion: false,
   isClicked: false,
@@ -42,7 +43,7 @@ export const genDAG3 = (node, songs) => {
 
   // Set up initial DAG
   const initNodes = step1.find(songs)
-    .map(song => ({ ...song, stepNum: 0, stepCol: step1.colour }));
+    .map(song => ({ ...song, stepNum: 0, stepCol: step1.colour, stepFeats: step1.checkedFeatures().map(([fname, _]) => fname) }));
   let dag = { nodes: [initNodes], links: [], unions: [] };
 
   // Expand initial step

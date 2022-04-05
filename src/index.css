@@ -203,7 +203,7 @@ button {
 
 /* columns */
 
-.playlistdiv, .dagdiv, .recipediv {
+.playlistdiv, .dagdiv, .specdiv {
   background-color: #EEEEEE;
   overflow: scroll;
   border-radius: 5px;
