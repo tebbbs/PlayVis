@@ -19,25 +19,21 @@ const FeatureStep = (type, id) => ({
     return <StepBody step={this} setStep={setNode} />
   },
 
-  renderMidHeader(setNode) {
-    return <StepConfig step={this} setStep={setNode} />
-  },
-
   renderRightHeader(setNode) {
-    return <StepConfig step={this} setStep={setNode} />
+    return <StepConfig step={this} setStep={setNode} position={ this.isRoot ? "right top" : "right center"} />
   }
 
 });
 
 export default FeatureStep;
 
-const StepConfig = ({ step, setStep }) => {
+const StepConfig = ({ step, setStep, position }) => {
 
   //⚙️
   return <Popup
     arrow={true}
     trigger={<button className="configButton">...</button>}
-    position="right center"
+    position={position}
     offsetX={40}
     contentStyle={{ height: "auto", width: "auto" }}
   >
