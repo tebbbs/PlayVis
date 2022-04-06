@@ -64,13 +64,15 @@ export const DAGView = ({ data, setData, muted }) => {
         ? svg.select("g")
         : svg.append("g");
 
-      // declare a dag layout
+        
+        // declare a dag layout
+      const dagIsLarge = linkpairs.length > 250;  
       const tree = d3Dag
         .sugiyama()
         .layering(d3Dag.layeringLongestPath())
-        .decross(d3Dag.decrossTwoLayer().passes(96))
-        .coord(d3Dag.coordQuad())
-        .nodeSize(d => [y_sep, d ? d.data.isUnion ? x_sep / 8 : x_sep : x_sep]);
+        .decross(dagIsLarge ? d3Dag.decrossDfs() : d3Dag.decrossTwoLayer().passes(96))
+        .coord(dagIsLarge ? d3Dag.coordGreedy() : d3Dag.coordQuad())
+        .nodeSize(d => [y_sep, d && d.data.isUnion ? 0  : x_sep]);
 
       // make dag from edge list
       let dag = d3Dag.dagConnect()(linkpairs);
@@ -350,13 +352,13 @@ export const DAGView = ({ data, setData, muted }) => {
         display: "flex",
         alignItems: "flex-start",
         paddingTop: "2px",
-        paddingLeft: x_sep / 8,
       }}>
         {data.nodes.map((_, i) =>
           <div key={i} style={{
             textAlign: "center",
             color: "#888888",
-            flexBasis: x_sep,
+            borderWidth: "2px",
+            flexBasis: x_sep - 2,
             flexShrink: 0,
             borderStyle: i > 0 ? "none none none dashed" : "none",
             borderColor: "#AAAAAA40",

@@ -151,7 +151,7 @@ export default function App() {
             </div>
 
             <div className="playlistdiv">
-              {state.dag && <Playlist dag={state.dag} />}
+              {state.dag && state.dag.links.flat().length < 10000 && <Playlist dag={state.dag} />}
             </div>
 
           </div>

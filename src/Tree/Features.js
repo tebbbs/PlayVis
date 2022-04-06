@@ -23,23 +23,34 @@ const info = {
   }
 };
 
-const absRangedFeature = (feat) => ({
-  ...info[feat],
-  filter(songs, curr) { return songs.filter(song => this.min <= song.features[feat] && song.features[feat] <= this.max) },
-  ranges(songs) {
-    const minMax = (feats) => [Math.min(...feats), Math.max(...feats)];
-    return minMax(songs.map(s => s.features[feat]));
-  },
-  view(songs, setState) {
-    return <RangedStepElem
-      label={this.short}
-      format={x => (x * (["acousticness", "danceability", "energy"].includes(feat) ? 100 : 1)).toFixed(0)}
-      state={this}
-      range={this.ranges(songs)}
-      setState={setState}
-    />
+const absRangedFeature = (feat) => {
+
+  const isDecimal = ["acousticness", "danceability", "energy"].includes(feat);
+  const format = {
+    fRead: x => (x * (isDecimal ? 100 : 1)).toFixed(0),
+    fEdit: x => (x * (isDecimal ? 100 : 1)).toFixed(0),
+    uFEdit: x => parseFloat(x / (isDecimal ? 100.0 : 1.0)),
+    step: isDecimal ? 0.01 : 1,
   }
-});
+
+  return {
+    ...info[feat],
+    filter(songs, curr) { return songs.filter(song => this.min <= song.features[feat] && song.features[feat] <= this.max) },
+    ranges(songs) {
+      const minMax = (feats) => [Math.min(...feats), Math.max(...feats)];
+      return minMax(songs.map(s => s.features[feat]));
+    },
+    view(songs, setState) {
+      return <RangedStepElem
+        label={this.name}
+        format={format}
+        state={this}
+        range={this.ranges(songs)}
+        setState={setState}
+      />
+    }
+  }
+};
 
 const relRangedFeature = (feat) => ({
   ...info[feat],
@@ -51,8 +62,13 @@ const relRangedFeature = (feat) => ({
   },
   view(songs, setState) {
     return <RangedStepElem
-      label={this.short}
-      format={x => `${x >= 0 ? "+" : ""}${x.toFixed(0)}%`}
+      label={this.name}
+      format={{
+        fRead: x => `${x >= 0 ? "+" : ""}${x.toFixed(0)}%`,
+        fEdit: x => x.toFixed(0),
+        uFEdit: x => parseInt(x),
+        step: 1
+      }}
       state={this}
       range={[-50, 50]}
       setState={setState}
@@ -115,7 +131,7 @@ const AbskeyFeature = () => ({
 export const defaultAbsStepState = {
   tempo: { checked: true, min: 150, max: 180, ...absRangedFeature("tempo") },
   acousticness: { checked: true, min: 0, max: 0.30, ...absRangedFeature("acousticness") },
-  danceability: { checked: true, min: 0.65, max: 1.00, ...absRangedFeature("danceability") },
+  danceability: { checked: true, min: 0.65, max: 0.95, ...absRangedFeature("danceability") },
   energy: { checked: false, min: 0.4, max: 0.9, ...absRangedFeature("energy") },
   key: { checked: false, val: 3, /* more needed here */ ...AbskeyFeature() }
 };

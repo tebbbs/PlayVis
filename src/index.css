@@ -20,6 +20,7 @@ code {
 
 .treeNode {
   font-size: small;
+  color: #333333;
   background-color: #EEEEEE;
   padding: 0px;
   margin: 3px;
@@ -29,7 +30,7 @@ code {
 .nodeHeader {
   display: flex;
   justify-content: space-between;
-  padding: 5px 10px 0 10px;
+  padding: 2px 5px;
 }
 
 /* .nodeHeaderMid {
@@ -50,11 +51,12 @@ code {
 }
 
 .stepElem {
-  margin: 2px;
+  position: relative;
+  margin: 0px 2px;
   padding: 0px 5px;
   background-color: #FFFccc25;
   border-radius: 5px;
-  text-align: left;
+  text-align: center;
   flex-basis: 29%;
   flex-grow: 0;
 }
@@ -65,29 +67,40 @@ code {
   align-items: center;
 }
 
-.stepElemValsAndLabel {
+.stepElemVals {
+  margin-top: 2px;
   display: flex;
-  justify-content: center;
-  width: 90%;
+  justify-content: space-around;
+  width: 100%;
 }
 
-.stepElemTexts {
-  min-width: 30px;
+.stepElemLabel {
   text-align: center;
+  font-style: italic;
 }
 
 .loops {
   display: flex;
-
 }
 
-.valInput {
+.loopsNumInput {
   border-radius: 5px;
+  background-color: #FFFFFF99;
   border: 0;
+  margin-left: 4px;
   padding: 0 0 0 3px;
   width: 25px;
   height: min-content;
 
+}
+
+.featNumInput {
+  background-color: transparent;
+  font-size: 9pt;
+  margin-bottom: 3px;
+  border: 0;
+  width: 6ch;
+  text-align: center;
 }
 
 .keySelect {
@@ -97,7 +110,6 @@ code {
   height: min-content;
   margin: 5px 0px 2px 0;
   background-color: transparent;
-
 }
 
 .groupButtonDiv {
@@ -140,8 +152,10 @@ button {
 }
 
 .smallDelButton {
+  position: absolute;
+  left: 2px;
+  top: 2px;
   padding: 0%;
-  margin: 2px 0 0 0;
   border-radius: 5px;
   background-color: #00000020;
   width: 15px;
@@ -208,7 +222,9 @@ button {
 
 /* columns */
 
-.playlistdiv, .dagdiv, .specdiv {
+.playlistdiv,
+.dagdiv,
+.specdiv {
   background-color: #EEEEEE;
   overflow: scroll;
   border-radius: 5px;
