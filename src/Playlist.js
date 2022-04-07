@@ -14,14 +14,15 @@ const Placeholder = ({ index }) => {
       style={{
         backgroundColor: "#BBBBBB60",
         border: "dotted",
-        borderColor: "#BBBBBB"
+        borderColor: "#BBBBBB",
+        borderWidth: "1px"
       }}>
       <div style={{
-        height: "50px", width: "50px", display: "flex",
+        height: "48px", width: "50px", display: "flex",
         justifyContent: "center",
         alignItems: "center",
         backgroundColor: "#BBBBBB60",
-        borderRadius: "5px"
+        borderRadius: "5px",
       }}>
         <h1 style={{ color: "#888888" }}> ? </h1>
       </div>
