@@ -15,7 +15,6 @@ const formatNodes = (nodes) => nodes.map(narr => narr.map(node => ({
 
   isUnion: false,
 
-  isClicked: false,
   inPlaylist: false,
   isHighlighted: false,
   isDarkened: false,

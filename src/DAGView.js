@@ -42,6 +42,8 @@ export const DAGView = ({ data, setData, muted }) => {
 
   const linkpairs = linkprops.map(linkObj => [linkObj.source, linkObj.target]);
 
+  // based on code from https://codesandbox.io/s/upbeat-feistel-tlumj
+
   // helper variables
   const duration = 750;
   const x_sep = 140;

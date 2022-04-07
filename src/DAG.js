@@ -76,9 +76,8 @@ export default class DAG {
     const nodes = newDag.nodes;
     const playlistIDs = nodes.flat().filter(n => n.inPlaylist).map(n => n.id);
 
-    // mark selected song as "clicked", add it to playist 
+    // add clicked song to playist 
     const clickedNode = nodes[stepNum].find(n => n.trackid === trackid);
-    clickedNode.isClicked = true;
     clickedNode.inPlaylist = true;
     playlistIDs.includes(clickedNode.id);
 
