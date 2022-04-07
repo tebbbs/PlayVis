@@ -52,7 +52,7 @@ code {
 
 .stepElem {
   position: relative;
-  margin: 0px 2px;
+  margin: 0px 2px 2px 2px;
   padding: 0px 10px;
   background-color: #FFFccc25;
   border-radius: 5px;
