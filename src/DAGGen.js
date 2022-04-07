@@ -14,8 +14,11 @@ const formatNodes = (nodes) => nodes.map(narr => narr.map(node => ({
   stepFeats: node.stepFeats,
 
   isUnion: false,
+
   isClicked: false,
+  inPlaylist: false,
   isHighlighted: false,
+  isDarkened: false,
   highlightCol: "clear",
 
   attributes: {

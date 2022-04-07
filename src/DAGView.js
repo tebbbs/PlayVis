@@ -171,6 +171,7 @@ export const DAGView = ({ data, setData, muted }) => {
         // Add rectangles for highlighting
         nodeEnter
           .append("rect")
+          .attr("class", "outline")
           .attr("x", -28)
           .attr("y", -28)
           .attr("rx", 5)
@@ -178,6 +179,19 @@ export const DAGView = ({ data, setData, muted }) => {
           .attr("height", 56)
           .attr("width", 56)
           .attr("fill", "transparent");
+
+        // Add rectangles for shadow
+        nodeEnter
+          .append("rect")
+          .attr("class", "shadow")
+          .attr("x", -28)
+          .attr("y", -28)
+          .attr("rx", 5)
+          .attr("ry", 5)
+          .attr("height", 56)
+          .attr("width", 56)
+          .attr("fill", "#88888880")
+          .attr("opacity", "0");
 
 
         // UPDATE
@@ -216,25 +230,26 @@ export const DAGView = ({ data, setData, muted }) => {
 
         // Initially, hide rectangle highlights from previous renders
         nodeUpdate
-          .select("rect")
+          .selectAll("rect")
           .attr("opacity", "0");
 
-        // Highlight any clicked/highlighted nodes
-        let nodeHighlight = d3
-          .selectAll("g.node")
-          .filter(d => d.data.isHighlighted || d.data.isClicked);
+        // Highlight any selected/highlighted nodes
+        const nodeHighlight = nodeUpdate
+          .filter(d => d.data.isHighlighted);
 
         // Show rectangle
         nodeHighlight
-          .select("rect")
+          .select(".outline")
           .attr("stroke", d => d.data.highlightCol)
           .attr("opacity", "1");
 
         // Reduce opacity of other instances
-        nodeHighlight
-          .filter(node => !node.data.isClicked)
-          .select("rect")
-          .attr("fill", "#cccccc80")
+        const nodeShadow = nodeUpdate
+          .filter(d => d.data.isDarkened)
+          
+        nodeShadow 
+          .select(".shadow")
+          .attr("opacity", "1");
 
         // Transition to the proper position for the node
         nodeUpdate

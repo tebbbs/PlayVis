@@ -73,25 +73,36 @@ export default class DAG {
       .filterRoutesTo(trackid, stepNum)
       .filterRoutesFrom(trackid, stepNum);
 
-    // apply formatting to selected song and any automatic selections 
-    for (let i = 0; i < newDag.nodes.length; i++) {
-      
-      if (newDag.nodes[i].length === 1) {
-        const node = newDag.nodes[i][0];
-        node.isClicked = true;
-        if (!node.isHighlighted) {
+    const nodes = newDag.nodes;
+    const playlistIDs = nodes.flat().filter(n => n.inPlaylist).map(n => n.id);
+
+    // mark selected song as "clicked", add it to playist 
+    const clickedNode = nodes[stepNum].find(n => n.trackid === trackid);
+    clickedNode.isClicked = true;
+    clickedNode.inPlaylist = true;
+    playlistIDs.includes(clickedNode.id);
+
+    // find all one-node layers, add nodes to playlist 
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].length === 1) {
+        const autoNode = nodes[i][0];
+        autoNode.inPlaylist = true;
+        playlistIDs.push(autoNode.id);
+      }
+    }
+
+    // highlight all nodes that were added to the playlist in this step
+    for (let i = 0; i < nodes.length; i++) {
+      for (let j = 0; j < nodes[i].length; j++) {
+        const node = nodes[i][j];
+        if (playlistIDs.includes(node.id) && !node.isHighlighted) {
           node.highlightCol = stepCol;
           node.isHighlighted = true;
         }
-      }
-
-      for (let j = 0; j < newDag.nodes[i].length; j++) {
-        if (i === stepNum && newDag.nodes[i][j].trackid === trackid) {
-          newDag.nodes[i][j].isClicked = true;
-        }
-        if (newDag.nodes[i][j].trackid === trackid) {
-          newDag.nodes[i][j].isHighlighted = true;
-          newDag.nodes[i][j].highlightCol = stepCol;
+        // grey-out all non-playlist nodes representing playlist songs (repeats)
+        else if (playlistIDs.map(nid => nid.slice(0, trackid.length))
+          .includes(node.trackid) && !node.inPlaylist) {
+          node.isDarkened = true;
         }
       }
     }
