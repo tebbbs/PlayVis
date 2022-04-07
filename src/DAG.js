@@ -65,7 +65,6 @@ export default class DAG {
     }
 
     return new DAG(nodes, links, this.unions)
-
   }
 
   chooseSong({ trackid, stepNum, stepCol }) {
@@ -75,11 +74,6 @@ export default class DAG {
 
     const nodes = newDag.nodes;
     const playlistIDs = nodes.flat().filter(n => n.inPlaylist).map(n => n.id);
-
-    // add clicked song to playist 
-    const clickedNode = nodes[stepNum].find(n => n.trackid === trackid);
-    clickedNode.inPlaylist = true;
-    playlistIDs.includes(clickedNode.id);
 
     // find all one-node layers, add nodes to playlist 
     for (let i = 0; i < nodes.length; i++) {
