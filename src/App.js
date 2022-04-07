@@ -59,9 +59,9 @@ export default function App() {
           <SpotifyLogin setToken={setToken} />
         </div>
         <br></br>
-        <button className="rectButton" onClick={() => setToken("DEMO0")}>Demo</button>
-        <button className="rectButton" onClick={() => setToken("DEMO1")}>Demo 1</button>
-        <button className="rectButton" onClick={() => setToken("DEMO2")}>Demo 2</button>
+        <button className="rectButton" onClick={() => setToken("DEMO0")}>Demo [Tracks   0-500]</button>
+        <button className="rectButton" onClick={() => setToken("DEMO1")}>Demo [Tracks   0-250]</button>
+        <button className="rectButton" onClick={() => setToken("DEMO2")}>Demo [Tracks 250-500]</button>
       </div>)
   }
 
