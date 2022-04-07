@@ -71,7 +71,7 @@ export const DAGView = ({ data, setData, muted }) => {
         .sugiyama()
         .layering(d3Dag.layeringLongestPath())
         .decross(dagIsLarge ? d3Dag.decrossDfs() : d3Dag.decrossTwoLayer().passes(96))
-        .coord(dagIsLarge ? d3Dag.coordGreedy() : d3Dag.coordQuad())
+        .coord(dagIsLarge ? d3Dag.coordCenter() : d3Dag.coordQuad())
         .nodeSize(d => [y_sep, d && d.data.isUnion ? 0  : x_sep]);
 
       // make dag from edge list
