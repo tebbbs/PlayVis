@@ -40,6 +40,9 @@ export default function App() {
       })
     setIncTree(tree => typeof action === "function" ? action(tree) : action);
   }
+  
+  useEffect(() => state.tree && setIncTree(state.tree), [state.tree]);
+
 
   useEffect(() => {
     if (!songs && token) {

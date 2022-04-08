@@ -114,7 +114,8 @@ const relKeyFeature = () => ({
           -
         </button>
         <div className="stepElemBody">
-          <span className="stepElemTexts">{this.short}</span>
+          <span className="stepElemTexts">{this.name}</span>
+          <br></br>
           <select id="keyOpts" className="keySelect"
             value={this.val} onChange={e => setState({ ...this, val: e.target.value })}
           >
