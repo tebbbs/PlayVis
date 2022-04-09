@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import * as d3 from 'd3';
 import * as d3Dag from 'd3-dag';
+import { height } from '@mui/system';
 
 const useD3 = (renderFn, dependencies) => {
   const ref = React.useRef();
@@ -66,15 +67,15 @@ export const DAGView = ({ data, setData, muted }) => {
         ? svg.select("g")
         : svg.append("g");
 
-        
-        // declare a dag layout
-      const dagIsLarge = linkpairs.length > 250;  
+
+      // declare a dag layout
+      const dagIsLarge = linkpairs.length > 250;
       const tree = d3Dag
         .sugiyama()
         .layering(d3Dag.layeringLongestPath())
         .decross(dagIsLarge ? d3Dag.decrossDfs() : d3Dag.decrossTwoLayer().passes(96))
         .coord(dagIsLarge ? d3Dag.coordCenter() : d3Dag.coordQuad())
-        .nodeSize(d => [y_sep, d && d.data.isUnion ? 0  : x_sep]);
+        .nodeSize(d => [y_sep, d && d.data.isUnion ? 0 : x_sep]);
 
       // make dag from edge list
       let dag = d3Dag.dagConnect()(linkpairs);
@@ -248,8 +249,8 @@ export const DAGView = ({ data, setData, muted }) => {
         // Reduce opacity of other instances
         const nodeShadow = nodeUpdate
           .filter(d => d.data.isDarkened)
-          
-        nodeShadow 
+
+        nodeShadow
           .select(".shadow")
           .attr("opacity", "1");
 
@@ -348,46 +349,74 @@ export const DAGView = ({ data, setData, muted }) => {
     }, [JSON.parse(JSON.stringify(data))]
   )
 
+  // styling constants
+
+  const lineWidth = 2;
+  const colHeadHeight = 20;
+  const colHeadVPadding = 4;
+
   return (
-    <div style={{ position: "relative", height: "95%", width: "95%" }}>
-      <svg 
+    <div style={{ position: "relative", height: "100%", width: "100%" }}>
+      { /* column titles */ }
+      <div style={{
+        pointerEvents: "none",
+        position: "sticky", top: 0,
+        display: "flex",
+        alignItems: "flex-start",
+      }}>
+        {data.nodes.map((_, i) =>
+          <div key={i} style={{
+            textAlign: "center",
+            flexBasis: x_sep,
+            flexShrink: 0,
+            display: "flex",
+            justifyContent: "center"
+          }}>
+            <div style={{
+              color: "#888888",
+              backgroundColor: "#EEEEEE",
+              borderRadius: "0px 0px 20px 20px",
+              width: "60px",
+              padding: `${colHeadVPadding} 4px 10px`,
+              minHeight: `${colHeadHeight}px`
+            }}>
+              <i>track {i + 1}</i>
+            </div>
+          </div>
+        )}
+      </div>
+      <svg
         ref={ref}
         style={{
           minWidth: "100%",
           minHeight: "100%",
           width: `${x_sep * data.nodes.length + 60}px`,
           height: `${yMax}px`,
-          marginTop: "15px",
-          marginRight: "0px",
-          marginLeft: "0px"
         }}
       />
-      {/*  column numbers and dashed lines*/}
+      {/* dashed lines*/}
       <div style={{
         pointerEvents: "none",
         position: "absolute", top: 0, left: 0,
         display: "flex",
         alignItems: "flex-start",
-        paddingTop: "2px",
+        minHeight: "100%",
       }}>
         {data.nodes.map((_, i) =>
           <div key={i} style={{
-            textAlign: "center",
             color: "#888888",
-            borderWidth: "2px",
-            flexBasis: x_sep - 2,
+            borderWidth: lineWidth + "px",
+            flexBasis: x_sep - lineWidth,
             flexShrink: 0,
             borderStyle: i > 0 ? "none none none dashed" : "none",
             borderColor: "#AAAAAA40",
-            minHeight: "100%",
-            height: `${yMax + 15}px`
+            minHeight: `${yMax + colHeadHeight + 2 * colHeadVPadding}px`
           }}>
-            <i>track {i + 1}</i>
           </div>
         )}
       </div>
-      
-    </div>
+
+    </div >
   )
 
 }
