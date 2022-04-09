@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import * as d3 from 'd3';
 import * as d3Dag from 'd3-dag';
-import { height } from '@mui/system';
 
 const useD3 = (renderFn, dependencies) => {
   const ref = React.useRef();
@@ -67,8 +66,8 @@ export const DAGView = ({ data, setData, muted }) => {
         ? svg.select("g")
         : svg.append("g");
 
-
-      // declare a dag layout
+        
+        // declare a dag layout
       const dagIsLarge = linkpairs.length > 250;
       const tree = d3Dag
         .sugiyama()
