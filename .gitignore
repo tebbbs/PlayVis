@@ -26,3 +26,6 @@ yarn-error.log*
 .firebase/
 .firebaserc
 firebase.json
+
+playvis.html
+/playvis_files
