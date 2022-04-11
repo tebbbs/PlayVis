@@ -23,6 +23,25 @@ import { SpotifyAuth, Scopes } from 'react-spotify-auth';
 import SpotifyWebApi from 'spotify-web-api-js';
 import 'react-spotify-auth/dist/index.css'
 
+export const exportPlaylist = async (songs, token) => {
+
+  // generate name for playlist
+  const d = new Date();
+  const dateTime = `${d.getUTCDate()}/${d.getUTCMonth() + 1}, ${d.getHours()}:${d.getMinutes()}`
+  const name = "PlayVis playlist " + dateTime;
+  const description = "A playlist created in PlayVis";
+
+  // initialise API, get current user
+  const api = new SpotifyWebApi();
+  api.setAccessToken(token);
+  const user = await api.getMe();
+
+  // create playlist and add songs
+  const playlist = await api.createPlaylist(user.id, { name, description });
+  const uris = songs.map(song => "spotify:track:" + song.trackid);
+  await api.addTracksToPlaylist(playlist.id, uris)
+}
+
 export const fetchSongs = async (token) => {
 
   if (["DEMO0", "DEMO1", "DEMO2"].includes(token)) {
@@ -104,19 +123,21 @@ export const getAllUserTracks = async (spotifyApi, limit) => {
 export const SpotifyLogin = (props) => {
 
   const [uri, noCookie] = process.env.NODE_ENV === "development"
-  ? ["http://localhost:3000/", false]
-  : ["https://playvis.web.app/", true];
-  
+    ? ["http://localhost:3000/", false]
+    : ["https://playvis.web.app/", true];
+
   return (
-    
+
     // Display the login page
     <SpotifyAuth
       {...props}
       redirectUri={uri}
       noCookie={noCookie}
       clientID='c79989282f4f40a2953b4adc36489afc'
-      scopes={
-        [Scopes.playlistReadCollaborative,
+      scopes={[
+        Scopes.playlistReadCollaborative,
+        Scopes.playlistModifyPrivate,
+        Scopes.playlistModifyPublic,
         Scopes.userLibraryRead]}
       onAccessToken={props.setToken}
     />

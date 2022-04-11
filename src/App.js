@@ -21,7 +21,7 @@
 
 import React, { useEffect, useState } from "react";
 import Cookies from "js-cookie";
-import { SpotifyLogin, fetchSongs } from "./Spotify";
+import { SpotifyLogin, fetchSongs, exportPlaylist } from "./Spotify";
 import { genDAG } from "./DAGGen";
 import { Spec, defaultTree } from "./Spec";
 import { DAGView } from "./DAGView";
@@ -61,7 +61,7 @@ export default function App() {
       })
     setIncTree(tree => typeof action === "function" ? action(tree) : action);
   }
-  
+
   useEffect(() => state.tree && setIncTree(state.tree), [state.tree]);
 
 
@@ -148,11 +148,18 @@ export default function App() {
                 () => setDagData(genDAG(state.tree, songs, allowReps))}>
                 Clear
               </button>
-              <button className="rectButton" type="button"
-                style={{ backgroundColor: "green" }}
-                onClick={() => {/* TODO */ }} >
-                Export to Spotify
-              </button>
+              {token && !["DEMO0", "DEMO1", "DEMO2"].includes(token) && <button className="rectButton" type="button"
+                  style={{ backgroundColor: "green" }}
+                  onClick={() => {
+                    if (token && state.dag) {
+                      const songs = state.dag.nodes
+                        .filter(layer => layer.length === 1)
+                        .flat();
+                      exportPlaylist(songs, token);
+                    }
+                  }} >
+                  Export to Spotify
+                </button>}
             </div>
 
             <div className="specdiv">

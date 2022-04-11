@@ -42,7 +42,7 @@ const AbsStep = (id) => ({
 
     const nextFront = allowReps
       ? this.find(songs)
-      : this.find(songs).filter(n => allNodeIDs.includes(n.id));
+      : this.find(songs).filter(song => !allNodeIDs.includes(song.track.id));
 
     if (nextFront.length === 0)
       return { links: [], frontier: [], union: null };

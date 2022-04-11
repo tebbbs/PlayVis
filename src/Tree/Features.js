@@ -23,11 +23,11 @@ import RangedStepElem from "./RangedStepElem"
 
 const info = {
   tempo: {
-    name: "Tempo (BPM)", 
+    name: "Tempo (BPM)",
     desc: "The overall estimated tempo of a track in beats per minute (BPM). In musical terminology, tempo is the speed or pace of a given piece and derives directly from the average beat duration.",
   },
   acousticness: {
-    name: "Acousticness", 
+    name: "Acousticness",
     desc: "A confidence measure from 0.0 to 1.0 of whether the track is acoustic. 1.0 represents high confidence the track is acoustic.",
   },
   danceability: {
@@ -97,22 +97,26 @@ const relRangedFeature = (feat) => ({
   }
 });
 
+const KeyFeatHead = ({ setState }) => <>
+  <button id="x" onClick={() => setState({ ...this, checked: false })} className="smallDelButton">
+    -
+  </button>
+  <span className="stepElemTexts">Key</span>
+  <br></br><br></br>
+</>;
+
 const absKeyFeature = () => ({
   ...info["key"],
   filter(songs, curr) {
-    /* TODO */
-    return songs;
+    return songs.filter(song => song.features.key === this.val);
   },
   view(songs, setState) {
     return (
       <div className="stepElem">
-        <button id="x" onClick={() => setState({ ...this, checked: false })} className="smallDelButton">
-          -
-        </button>
+        <KeyFeatHead setState={setState} />
         <div className="stepElemBody">
-          <span className="stepElemTexts">{this.short}</span>
           <select id="keyOpts" className="keySelect"
-            value={this.val} onChange={e => setState({ ...this, val: e.target.value })}
+            value={this.val} onChange={e => setState({ ...this, val: +e.target.value })}
           >
             {[...Array(12).keys()].map(i => <option key={i} value={i}>{i}</option>)}
           </select>
@@ -125,18 +129,27 @@ const absKeyFeature = () => ({
 const relKeyFeature = () => ({
   ...info["key"],
   filter(songs, curr) {
-    /* TODO */
-    return songs;
+    return songs.filter(song => {
+      const kSong = song.features.key;
+      const kCurr = curr.features.key;
+      // check for null keys
+      if (kCurr && kSong) {
+        const diff = kSong - kCurr;
+        return {
+          "same": kSong === kCurr,
+          "rel1": diff <= 1,
+          "rel2": diff <= 2
+        }[this.val];
+      }
+      else return false;
+    })
   },
+
   view(songs, setState) {
     return (
-      <div className="stepElem">
-        <button id="x" onClick={() => setState({ ...this, checked: false })} className="smallDelButton">
-          -
-        </button>
+      <div className="stepElem" >
+        <KeyFeatHead setState={setState} />
         <div className="stepElemBody">
-          <span className="stepElemTexts">{this.name}</span>
-          <br></br>
           <select id="keyOpts" className="keySelect"
             value={this.val} onChange={e => setState({ ...this, val: e.target.value })}
           >
@@ -145,7 +158,7 @@ const relKeyFeature = () => ({
             <option value="rel2">Related 2</option>
           </select>
         </div>
-      </div>
+      </div >
     )
   }
 });
@@ -155,7 +168,7 @@ export const defaultAbsStepState = {
   acousticness: { checked: true, min: 0, max: 0.30, ...absRangedFeature("acousticness") },
   danceability: { checked: true, min: 0.65, max: 0.95, ...absRangedFeature("danceability") },
   energy: { checked: false, min: 0.4, max: 0.9, ...absRangedFeature("energy") },
-  key: { checked: false, val: 3, /* more needed here */ ...absKeyFeature() }
+  key: { checked: false, val: 3, ...absKeyFeature() }
 };
 
 export const defaultRelStepState = {
@@ -163,5 +176,5 @@ export const defaultRelStepState = {
   acousticness: { checked: true, min: 0, max: 30, ...relRangedFeature("acousticness") },
   danceability: { checked: true, min: 0, max: 20, ...relRangedFeature("danceability") },
   energy: { checked: false, min: 0, max: 20, ...relRangedFeature("energy") },
-  key: { checked: false, val: "same", /* more needed here */ ...relKeyFeature() }
+  key: { checked: false, val: "rel1", ...relKeyFeature() }
 };
