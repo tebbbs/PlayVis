@@ -27,5 +27,7 @@ yarn-error.log*
 .firebaserc
 firebase.json
 
+# Submission files
 playvis.html
 /playvis_files
+code.zip
